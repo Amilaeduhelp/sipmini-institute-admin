@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Students - SIPMINI</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #5a6268;
+            transform: translateX(-5px);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.95;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+
+        .form-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 15px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .helper-text {
+            font-size: 13px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary { background: #667eea; }
+        .btn-secondary { background: #6c757d; }
+        .btn-danger { background: #dc3545; }
+        .btn-info { background: #17a2b8; }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .students-section {
+            margin-top: 30px;
+        }
+
+        .students-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .student-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s;
+        }
+
+        .student-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateX(5px);
+        }
+
+        .student-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .student-card p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .class-item {
+            margin-top: 10px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .class-info {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .class-info strong {
+            color: #667eea;
+            font-size: 16px;
+        }
+
+        .class-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .class-actions .btn {
+            padding: 8px 15px;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .modal-header h2 {
+            color: #667eea;
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        .modal-content {
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #dee2e6;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-row strong {
+            color: #667eea;
+        }
+
+        .existing-classes {
+            margin-top: 15px;
+        }
+
+        .existing-class-item {
+            background: white;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+
+        .modal-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+            font-size: 16px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-number {
+                font-size: 28px;
+            }
+
+            .class-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .class-actions {
+                width: 100%;
+            }
+
+            .class-actions .btn {
+                flex: 1;
+            }
+
+            .modal-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-btn">← පිටුපසට</a>
+        
+        <div class="header">
+            <h1>📚 සිසුන් කළමනාකරණය - Manage Students</h1>
+            <p class="subtitle">ශිෂ්‍ය තොරතුරු එකතු කිරීම සහ කළමනාකරණය</p>
+        </div>
+
+        <div id="alertBox" class="alert"></div>
+
+        <!-- Statistics Cards -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalStudents">0</div>
+                <div class="stat-label">මුළු ශිෂ්‍ය සංඛ්‍යාව<br>Total Students</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalClasses">0</div>
+                <div class="stat-label">මුළු පන්ති සංඛ්‍යාව<br>Total Classes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="freeClasses">0</div>
+                <div class="stat-label">නොමිලේ පන්ති<br>Free Classes</div>
+            </div>
+        </div>
+
+        <!-- Add Student Form -->
+        <div class="form-section">
+            <h2>➕ නව ශිෂ්‍යයෙකු / පන්තියක් එකතු කරන්න</h2>
+            <form id="studentForm">
+                <div class="form-group">
+                    <label>ශිෂ්‍ය අංකය - Student Number *</label>
+                    <input type="text" id="studentno" placeholder="s0001" required readonly>
+                    <div class="helper-text">
+                        ස්වයංක්‍රීයව ජනනය වේ. එකම අංකය බහු පන්ති සඳහා භාවිතා කරයි
+                        <br>Auto-generated. Same number for multiple classes
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>ශිෂ්‍ය නම - Student Name *</label>
+                    <input type="text" id="studentname" placeholder="නිමල් පෙරේරා" required>
+                </div>
+
+                <div class="form-group">
+                    <label>ගුරුවරයාගේ නම - Teacher Name *</label>
+                    <select id="teachername" required>
+                        <option value="">-- ගුරුවරයෙකු තෝරන්න - Select Teacher --</option>
+                        <option value="මහාචාර්ය චරිත් ජයතිලක">මහාචාර්ය චරිත් ජයතිලක</option>
+                        <option value="ධම්මික ගීකියනගේ">ධම්මික ගීකියනගේ</option>
+                        <option value="දිනේෂ් හල්ඕවිට">දිනේෂ් හල්ඕවිට</option>
+                        <option value="ඉරේෂා පින්තු">ඉරේෂා පින්තු</option>
+                        <option value="හර්ෂණ ලියනආරච්චි">හර්ෂණ ලියනආරච්චි</option>
+                        <option value="නිෂා ඉහළගම">නිෂා ඉහළගම</option>
+                        <option value="අමිල උඩවත්ත">අමිල උඩවත්ත</option>
+                        <option value="සුපෙම් අල්මේදා">සුපෙම් අල්මේදා</option>
+                        <option value="ප්‍රසාධි ජයතිලක">ප්‍රසාධි ජයතිලක</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>විෂයය - Subject *</label>
+                    <select id="subject" required>
+                        <option value="">-- විෂයය තෝරන්න - Select Subject --</option>
+                        <option value="Physics">Physics - භෞතික විද්‍යාව</option>
+                        <option value="Combined Maths">Combined Maths - ඒකාබද්ධ ගණිතය</option>
+                        <option value="Chemistry">Chemistry - රසායන විද්‍යාව</option>
+                        <option value="Maths">Maths - ගණිතය</option>
+                        <option value="Sinhala">Sinhala - සිංහල</option>
+                        <option value="English">English - ඉංග්‍රීසි</option>
+                        <option value="History">History - ඉතිහාසය</option>
+                        <option value="Art">Art - චිත්‍ර</option>
+                        <option value="Science">Science - විද්‍යාව</option>
+                        <option value="Bio Science">Bio Science - ජීව විද්‍යාව</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>දුරකථන අංකය - Phone Number</label>
+                    <input type="text" id="phoneno" placeholder="0771234567">
+                    <div class="helper-text">Optional - විකල්පයකි</div>
+                </div>
+
+                <div class="form-group">
+                    <label>මාසික ගාස්තුව - Monthly Fee (Rs.) *</label>
+                    <input type="number" id="monthly_fee" placeholder="0 = නොමිලේ / FREE" required min="0" step="0.01">
+                    <div class="helper-text">
+                        0 ඇතුළත් කළහොත් නොමිලේ පන්තියක් ලෙස සලකයි
+                        <br>Enter 0 for FREE class
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">➕ පන්තිය එකතු කරන්න - Add Class</button>
+                <button type="button" class="btn btn-secondary" id="refreshBtn">🔄 නැවුම් කරන්න - Refresh</button>
+            </form>
+        </div>
+
+        <!-- Students List -->
+        <div class="students-section">
+            <h2>📋 වත්මන් ශිෂ්‍යයින් සහ පන්ති - Current Students & Classes</h2>
+            <div id="studentsList">
+                <div class="loading">📥 දත්ත පූරණය වෙමින්... Loading data...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Existing Student Modal -->
+    <div id="existingStudentModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>⚠️ ශිෂ්‍ය අංකය දැනටමත් තිබේ</h2>
+                <p style="color: #666; font-size: 14px;">Student Number Already Exists</p>
+            </div>
+            <div class="modal-content">
+                <div class="info-box">
+                    <div class="info-row">
+                        <strong>අංකය - Number:</strong>
+                        <span id="existingStudentNo"></span>
+                    </div>
+                    <div class="info-row">
+                        <strong>නම - Name:</strong>
+                        <span id="existingStudentName"></span>
+                    </div>
+                    <div class="info-row">
+                        <strong>දුරකථන - Phone:</strong>
+                        <span id="existingStudentPhone"></span>
+                    </div>
+                </div>
+                
+                <p style="margin-bottom: 15px; text-align: center; color: #666; font-weight: 600;">
+                    මෙම ශිෂ්‍යයා සඳහා නව පන්තියක් එකතු කරන්නද?<br>
+                    <small>Add new class for this student?</small>
+                </p>
+                
+                <div class="existing-classes">
+                    <strong style="color: #667eea;">වත්මන් පන්ති - Current Classes:</strong>
+                    <div id="existingClassesList"></div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="addNewClass()">
+                    ✓ නව පන්තිය එකතු කරන්න<br>
+                    <small style="font-size: 12px; font-weight: normal;">Add New Class</small>
+                </button>
+                <button class="btn btn-secondary" onclick="closeExistingStudentModal()">
+                    ✗ අවලංගු කරන්න<br>
+                    <small style="font-size: 12px; font-weight: normal;">Cancel</small>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://uqgzlaxsnknheoerbfus.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxZ3psYXhzbmtuaGVvZXJiZnVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MDQzMTEsImV4cCI6MjA2MDM4MDMxMX0.O5dNUizqZ5kfwTs0mHLEorqOAqjZFjWakp2Q484MKEk';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let pendingClassData = null;
+        let existingStudentData = null;
+
+        // Show alert message
+        function showAlert(message, type = 'success') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.className = `alert alert-${type} show`;
+            alertBox.textContent = message;
+            
+            setTimeout(() => {
+                alertBox.classList.remove('show');
+            }, 5000);
+        }
+
+        // Auto-generate student number
+        async function generateStudentNumber() {
+            try {
+                const { data: students, error } = await supabase
+                    .from('sipminireport')
+                    .select('studentno')
+                    .order('studentno', { ascending: false })
+                    .limit(1);
+
+                if (error) throw error;
+
+                let nextNumber = 1;
+                if (students && students.length > 0) {
+                    const lastNo = students[0].studentno;
+                    const numPart = parseInt(lastNo.substring(1));
+                    nextNumber = numPart + 1;
+                }
+
+                const newStudentNo = 's' + String(nextNumber).padStart(4, '0');
+                document.getElementById('studentno').value = newStudentNo;
+            } catch (error) {
+                console.error('Error generating student number:', error);
+                document.getElementById('studentno').value = 's0001';
+            }
+        }
+
+        // Update statistics
+        function updateStats(totalStudents, totalClasses, freeClasses) {
+            document.getElementById('totalStudents').textContent = totalStudents;
+            document.getElementById('totalClasses').textContent = totalClasses;
+            document.getElementById('freeClasses').textContent = freeClasses;
+        }
+
+        // Load all students
+        async function loadStudents() {
+            try {
+                const { data: classes, error } = await supabase
+                    .from('sipminireport')
+                    .select('*')
+                    .order('studentno', { ascending: true });
+
+                if (error) throw error;
+
+                const studentsList = document.getElementById('studentsList');
+                
+                if (!classes || classes.length === 0) {
+                    studentsList.innerHTML = '<div class="no-data">📭 තවම ශිෂ්‍යයින් නොමැත<br>No students yet</div>';
+                    updateStats(0, 0, 0);
+                    return;
+                }
+
+                // Group classes by student number
+                const grouped = {};
+                classes.forEach(c => {
+                    if (!grouped[c.studentno]) {
+                        grouped[c.studentno] = {
+                            studentname: c.studentname,
+                            phoneno: c.phoneno,
+                            classes: []
+                        };
+                    }
+                    grouped[c.studentno].classes.push(c);
+                });
+
+                let totalClasses = classes.length;
+                let freeCount = 0;
+
+                // Generate HTML for student cards
+                studentsList.innerHTML = Object.entries(grouped).map(([studentno, data]) => {
+                    const classesHTML = data.classes.map(c => {
+                        const fee = parseFloat(c.monthly_fee) || 0;
+                        if (fee === 0) freeCount++;
+                        
+                        return `
+                            <div class="class-item">
+                                <div class="class-info">
+                                    <strong>${c.subject}</strong> - ${c.teachername}
+                                    <br>
+                                    <span style="color: #666; font-size: 14px;">
+                                        Rs. ${fee.toFixed(2)} ${fee === 0 ? '(නොමිලේ - FREE)' : ''}
+                                    </span>
+                                </div>
+                                <div class="class-actions">
+                                    <button class="btn btn-danger" onclick="deleteClass(${c.id}, '${c.studentname}', '${c.subject}')">
+                                        🗑️ Delete
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    return `
+                        <div class="student-card">
+                            <h3>${data.studentname} (${studentno})</h3>
+                            <p>
+                                <strong>📞 දුරකථන - Phone:</strong> ${data.phoneno || 'N/A'} | 
+                                <strong>📚 පන්ති - Classes:</strong> ${data.classes.length}
+                            </p>
+                            ${classesHTML}
+                        </div>
+                    `;
+                }).join('');
+
+                updateStats(Object.keys(grouped).length, totalClasses, freeCount);
+            } catch (error) {
+                showAlert('දත්ත පූරණය කිරීමේ දෝෂයක් - Error loading data', 'error');
+                console.error('Error loading students:', error);
+            }
+        }
+
+        // Add student/class form submission
+        document.getElementById('studentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const studentData = {
+                studentno: document.getElementById('studentno').value.trim().toLowerCase(),
+                studentname: document.getElementById('studentname').value.trim(),
+                teachername: document.getElementById('teachername').value.trim(),
+                subject: document.getElementById('subject').value.trim(),
+                phoneno: document.getElementById('phoneno').value.trim(),
+                monthly_fee: parseFloat(document.getElementById('monthly_fee').value) || 0,
+                treport: 0,
+                ireport: 0
+            };
+
+            // Validate student number format
+            if (!studentData.studentno.match(/^s\d{4}$/)) {
+                showAlert('ශිෂ්‍ය අංකය s0001 ආකෘතියෙන් විය යුතුයි - Student number must be in format s0001', 'error');
+                return;
+            }
+
+            try {
+                // Check if student number already exists
+                const { data: existing, error: checkError } = await supabase
+                    .from('sipminireport')
+                    .select('*')
+                    .eq('studentno', studentData.studentno);
+
+                if (checkError) throw checkError;
+
+                if (existing && existing.length > 0) {
+                    // Check for duplicate class
+                    const duplicate = existing.find(s => 
+                        s.subject.toLowerCase() === studentData.subject.toLowerCase() && 
+                        s.teachername.toLowerCase() === studentData.teachername.toLowerCase()
+                    );
+
+                    if (duplicate) {
+                        showAlert('මෙම ශිෂ්‍යයා මෙම පන්තිය දැනටමත් follow කරයි! - This student already has this class!', 'error');
+                        return;
+                    }
+
+                    // Show existing student modal
+                    showExistingStudentModal(existing, studentData);
+                    return;
+                }
+
+                // Insert new student
+                await insertStudent(studentData);
+                await generateStudentNumber();
+            } catch (error) {
+                showAlert('දෝෂයක් - Error: ' + error.message, 'error');
+                console.error('Error adding student:', error);
+            }
+        });
+
+        // Show existing student modal
+        function showExistingStudentModal(existingClasses, newClassData) {
+            existingStudentData = existingClasses[0];
+            pendingClassData = newClassData;
+
+            document.getElementById('existingStudentNo').textContent = existingStudentData.studentno;
+            document.getElementById('existingStudentName').textContent = existingStudentData.studentname;
+            document.getElementById('existingStudentPhone').textContent = existingStudentData.phoneno || 'N/A';
+
+            const classList = existingClasses.map(c => 
+                `<div class="existing-class-item">
+                    <strong>${c.subject}</strong> - ${c.teachername}
+                    <br><small style="color: #666;">Rs. ${parseFloat(c.monthly_fee) || 0}</small>
+                </div>`
+            ).join('');
+            document.getElementById('existingClassesList').innerHTML = classList;
+
+            document.getElementById('existingStudentModal').classList.add('show');
+        }
+
+        // Close existing student modal
+        function closeExistingStudentModal() {
+            document.getElementById('existingStudentModal').classList.remove('show');
+            pendingClassData = null;
+            existingStudentData = null;
+        }
+
+        // Add new class for existing student
+        async function addNewClass() {
+            if (!pendingClassData || !existingStudentData) return;
+
+            // Use existing student's name and phone
+            pendingClassData.studentname = existingStudentData.studentname;
+            pendingClassData.phoneno = existingStudentData.phoneno;
+
+            await insertStudent(pendingClassData);
+            closeExistingStudentModal();
+        }
+
+        // Insert student into database
+        async function insertStudent(studentData) {
+            try {
+                const { error } = await supabase
+                    .from('sipminireport')
+                    .insert([studentData]);
+
+                if (error) throw error;
+
+                showAlert(`✓ ${studentData.subject} පන්තිය ${studentData.studentname} සඳහා එකතු කරන ලදි! - ${studentData.subject} class added for ${studentData.studentname}!`, 'success');
+                
+                // Reset form
+                document.getElementById('studentForm').reset();
+                document.getElementById('teachername').value = '';
+                document.getElementById('subject').value = '';
+                
+                // Reload students list
+                loadStudents();
+            } catch (error) {
+                showAlert('දෝෂයක් - Error: ' + error.message, 'error');
+                console.error('Error inserting student:', error);
+            }
+        }
+
+        // Delete class
+        async function deleteClass(id, name, subject) {
+            const confirmMessage = `ඔබට ${name} සඳහා ${subject} පන්තිය ඉවත් කිරීමට අවශ්‍යද?\n\nDelete ${subject} class for ${name}?`;
+            
+            if (!confirm(confirmMessage)) return;
+
+            try {
+                const { error } = await supabase
+                    .from('sipminireport')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                showAlert(`✓ ${subject} පන්තිය ඉවත් කරන ලදි - ${subject} class deleted`, 'success');
+                loadStudents();
+            } catch (error) {
+                showAlert('ඉවත් කිරීමේ දෝෂයක් - Delete error', 'error');
+                console.error('Error deleting class:', error);
+            }
+        }
+
+        // Refresh button
+        document.getElementById('refreshBtn').addEventListener('click', () => {
+            loadStudents();
+            showAlert('🔄 දත්ත නැවුම් කරන ලදි - Data refreshed', 'success');
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('existingStudentModal').addEventListener('click', (e) => {
+            if (e.target.id === 'existingStudentModal') {
+                closeExistingStudentModal();
+            }
+        });
+
+        // Initial load
+        window.addEventListener('DOMContentLoaded', () => {
+            generateStudentNumber();
+            loadStudents();
+        });
+    </script>
+</body>
+</html>
