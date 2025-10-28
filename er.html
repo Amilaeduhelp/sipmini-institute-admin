@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Records - SIPMINI</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary { background: #667eea; }
+        .btn-secondary { background: #6c757d; }
+        .btn-danger { background: #dc3545; }
+        .btn-warning { background: #ffc107; color: #000; }
+        .btn-info { background: #17a2b8; }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-buttons .btn {
+            margin: 0;
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        .student-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #667eea;
+            font-size: 20px;
+        }
+
+        .modal-content {
+            margin-bottom: 20px;
+        }
+
+        .modal-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-btn">🔙 පසු බස - Back to Home</a>
+        
+        <h1>✏️ සංස්කරණය කරන්න - Edit Records</h1>
+        <p class="subtitle">Search, Edit and Delete Student Records</p>
+
+        <div id="alertBox" class="alert"></div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalRecords">0</div>
+                <div class="stat-label">Total Records</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="displayedRecords">0</div>
+                <div class="stat-label">Displayed Records</div>
+            </div>
+        </div>
+
+        <div class="search-box">
+            <h3 style="color: #667eea; margin-bottom: 15px;">🔍 සොයන්න - Search & Filter</h3>
+            
+            <div class="form-group">
+                <label>Search by:</label>
+                <input type="text" id="searchInput" placeholder="Student number, name, teacher, or subject">
+            </div>
+
+            <div class="form-group">
+                <label>Filter by Teacher:</label>
+                <select id="teacherFilter" onchange="filterByTeacher()">
+                    <option value="">-- All Teachers --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Filter by Subject:</label>
+                <select id="subjectFilter" onchange="filterBySubject()">
+                    <option value="">-- All Subjects --</option>
+                </select>
+            </div>
+
+            <div class="filter-buttons">
+                <button class="btn btn-primary" onclick="searchRecords()">🔍 Search</button>
+                <button class="btn btn-secondary" onclick="showAllRecords()">📋 Show All</button>
+                <button class="btn btn-danger" onclick="clearSearch()">🗑️ Clear All Filters</button>
+            </div>
+        </div>
+
+        <div id="editSearchResults"></div>
+    </div>
+
+    <!-- Edit Record Modal -->
+    <div id="editRecordModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>✏️ සංස්කරණය කරන්න - Edit Record</h2>
+            </div>
+            <div class="modal-content">
+                <input type="hidden" id="editRecordId">
+                
+                <div class="form-group">
+                    <label>Student Number *</label>
+                    <input type="text" id="editStudentNo" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Student Name *</label>
+                    <input type="text" id="editStudentName" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Teacher Name *</label>
+                    <input type="text" id="editTeacherName" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Subject *</label>
+                    <input type="text" id="editSubject" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" id="editPhoneNo">
+                </div>
+
+                <div class="form-group">
+                    <label>Monthly Fee *</label>
+                    <input type="number" id="editMonthlyFee" required>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="saveEditedRecord()">💾 Save Changes</button>
+                <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://uqgzlaxsnknheoerbfus.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxZ3psYXhzbmtuaGVvZXJiZnVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MDQzMTEsImV4cCI6MjA2MDM4MDMxMX0.O5dNUizqZ5kfwTs0mHLEorqOAqjZFjWakp2Q484MKEk';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let allRecords = [];
+
+        function showAlert(message, type = 'success') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.className = `alert alert-${type} show`;
+            alertBox.textContent = message;
+            setTimeout(() => alertBox.classList.remove('show'), 5000);
+        }
+
+        async function loadAllRecords() {
+            try {
+                const { data: records, error } = await supabase
+                    .from('sipminireport')
+                    .select('*')
+                    .order('studentno', { ascending: true });
+
+                if (error) throw error;
+
+                allRecords = records || [];
+                document.getElementById('totalRecords').textContent = allRecords.length;
+                
+                // Populate teacher dropdown
+                const teachers = [...new Set(allRecords.map(r => r.teachername))].sort();
+                const teacherSelect = document.getElementById('teacherFilter');
+                teacherSelect.innerHTML = '<option value="">-- All Teachers --</option>' +
+                    teachers.map(t => `<option value="${t}">${t}</option>`).join('');
+                
+                // Populate subject dropdown
+                const subjects = [...new Set(allRecords.map(r => r.subject))].sort();
+                const subjectSelect = document.getElementById('subjectFilter');
+                subjectSelect.innerHTML = '<option value="">-- All Subjects --</option>' +
+                    subjects.map(s => `<option value="${s}">${s}</option>`).join('');
+                
+                showAllRecords();
+            } catch (error) {
+                showAlert('Error loading records: ' + error.message, 'error');
+            }
+        }
+
+        async function searchRecords() {
+            const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+            
+            if (!searchTerm) {
+                showAlert('Please enter search term', 'error');
+                return;
+            }
+
+            const filtered = allRecords.filter(r => 
+                r.studentno.toLowerCase().includes(searchTerm) ||
+                r.studentname.toLowerCase().includes(searchTerm) ||
+                r.teachername.toLowerCase().includes(searchTerm) ||
+                r.subject.toLowerCase().includes(searchTerm)
+            );
+
+            displaySearchResults(filtered, `Search Results for "${searchTerm}"`);
+        }
+
+        function showAllRecords() {
+            displaySearchResults(allRecords, 'All Records');
+        }
+
+        async function filterByTeacher() {
+            const teacher = document.getElementById('teacherFilter').value;
+            
+            if (!teacher) {
+                showAllRecords();
+                return;
+            }
+
+            const filtered = allRecords.filter(r => r.teachername === teacher);
+            displaySearchResults(filtered, `Classes by ${teacher}`);
+        }
+
+        async function filterBySubject() {
+            const subject = document.getElementById('subjectFilter').value;
+            
+            if (!subject) {
+                showAllRecords();
+                return;
+            }
+
+            const filtered = allRecords.filter(r => r.subject === subject);
+            displaySearchResults(filtered, `${subject} Classes`);
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('teacherFilter').value = '';
+            document.getElementById('subjectFilter').value = '';
+            showAllRecords();
+        }
+
+        function displaySearchResults(records, title) {
+            const resultsDiv = document.getElementById('editSearchResults');
+            document.getElementById('displayedRecords').textContent = records.length;
+            
+            if (!records || records.length === 0) {
+                resultsDiv.innerHTML = '<p style="text-align: center; color: #999; padding: 30px;">No records found</p>';
+                return;
+            }
+
+            resultsDiv.innerHTML = `
+                <h3 style="color: #667eea; margin-bottom: 20px;">${title} (${records.length} records)</h3>
+                ${records.map(r => `
+                    <div class="student-card">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px; flex-wrap: wrap;">
+                            <div>
+                                <h3 style="margin-bottom: 5px;">${r.studentname} (${r.studentno})</h3>
+                                <p><strong>Subject:</strong> ${r.subject} | <strong>Teacher:</strong> ${r.teachername}</p>
+                                <p><strong>Phone:</strong> ${r.phoneno || 'N/A'} | <strong>Monthly Fee:</strong> Rs. ${r.monthly_fee || 0}</p>
+                            </div>
+                            <div style="display: flex; gap: 5px; margin-top: 10px;">
+                                <button class="btn btn-info" style="padding: 8px 15px; margin: 0;" onclick="editRecord(${r.id})">✏️ Edit</button>
+                                <button class="btn btn-danger" style="padding: 8px 15px; margin: 0;" onclick="deleteClass(${r.id}, '${r.studentname}', '${r.subject}')">🗑️ Delete</button>
+                            </div>
+                        </div>
+                        <div style="font-size: 13px; color: #666; margin-top: 10px;">
+                            <strong>Attendance:</strong> ${r.sreport ? r.sreport.split(',').length : 0} days | 
+                            <strong>Payments:</strong> ${r.payment ? r.payment.split(',').length : 0} months
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function editRecord(id) {
+            const record = allRecords.find(r => r.id === id);
+            if (!record) {
+                showAlert('Record not found', 'error');
+                return;
+            }
+
+            document.getElementById('editRecordId').value = record.id;
+            document.getElementById('editStudentNo').value = record.studentno;
+            document.getElementById('editStudentName').value = record.studentname;
+            document.getElementById('editTeacherName').value = record.teachername;
+            document.getElementById('editSubject').value = record.subject;
+            document.getElementById('editPhoneNo').value = record.phoneno || '';
+            document.getElementById('editMonthlyFee').value = record.monthly_fee || 0;
+
+            document.getElementById('editRecordModal').classList.add('show');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editRecordModal').classList.remove('show');
+        }
+
+        async function saveEditedRecord() {
+            const id = parseInt(document.getElementById('editRecordId').value);
+            
+            const updatedData = {
+                studentno: document.getElementById('editStudentNo').value.trim().toLowerCase(),
+                studentname: document.getElementById('editStudentName').value.trim(),
+                teachername: document.getElementById('editTeacherName').value.trim(),
+                subject: document.getElementById('editSubject').value.trim(),
+                phoneno: document.getElementById('editPhoneNo').value.trim(),
+                monthly_fee: parseFloat(document.getElementById('editMonthlyFee').value) || 0
+            };
+
+            if (!updatedData.studentno.match(/^s\d{4}$/)) {
+                showAlert('Student number must be in format s0001', 'error');
+                return;
+            }
+
+            try {
+                const { error } = await supabase
+                    .from('sipminireport')
+                    .update(updatedData)
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                showAlert('✓ සාර්ථකව යාවත්කාලීන කරන ලදි! Record updated successfully!', 'success');
+                closeEditModal();
+                await loadAllRecords();
+            } catch (error) {
+                showAlert('Error updating record: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteClass(id, name, subject) {
+            if (!confirm(`ඔබට මෙම පන්තිය මකා දැමීමට අවශ්‍යද?\n\nDelete ${subject} class for ${name}?`)) return;
+
+            try {
+                const { error } = await supabase
+                    .from('sipminireport')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+                showAlert(`✓ ${subject} පන්තිය මකා දමන ලදි! Class deleted successfully!`, 'success');
+                await loadAllRecords();
+            } catch (error) {
+                showAlert('Delete error: ' + error.message, 'error');
+            }
+        }
+
+        // Enter key support for search
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchRecords();
+            }
+        });
+
+        // Initial load
+        loadAllRecords();
+    </script>
+</body>
+</html>
