@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIPMINI - Student Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .search-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .search-title {
+            color: #667eea;
+            font-size: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 15px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 14px 28px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .btn-secondary { 
+            background: #6c757d;
+        }
+
+        .btn-warning { 
+            background: #ffc107;
+            color: #000;
+        }
+
+        .btn-whatsapp { 
+            background: #25D366;
+            color: white;
+        }
+
+        .btn-whatsapp:hover {
+            background: #20BA5A;
+        }
+
+        .helper-text {
+            font-size: 13px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            font-weight: 500;
+        }
+
+        .alert.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .report-container {
+            background: white;
+            padding: 30px;
+            border: 2px solid #dee2e6;
+            border-radius: 15px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .report-container.show {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .report-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .report-header h2 {
+            color: #667eea;
+            font-size: 26px;
+            margin-bottom: 10px;
+        }
+
+        .report-header h3 {
+            color: #333;
+            font-size: 22px;
+            margin-bottom: 5px;
+        }
+
+        .report-header p {
+            color: #666;
+            font-size: 15px;
+        }
+
+        .class-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        .class-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .class-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .class-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .fee-badge {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .fee-badge.free {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+        }
+
+        .class-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .detail-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .detail-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .balance-positive {
+            color: #28a745;
+        }
+
+        .balance-negative {
+            color: #dc3545;
+        }
+
+        .report-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .summary-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .summary-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .summary-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .summary-label {
+            font-size: 13px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .monthly-breakdown {
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+
+        .monthly-breakdown h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .month-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .month-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .month-card h5 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .month-detail {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+            font-size: 14px;
+        }
+
+        .month-detail:last-child {
+            border-bottom: none;
+        }
+
+        .month-detail-label {
+            color: #666;
+        }
+
+        .month-detail-value {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .report-section {
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .report-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .class-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .report-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .month-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                max-width: 100%;
+            }
+
+            .search-section,
+            .report-actions {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 SIPMINI Student Report Portal</h1>
+            <p>ශිෂ්‍ය වාර්තා බලන්න - View Student Reports</p>
+        </div>
+
+        <div id="alertBox" class="alert"></div>
+
+        <div class="search-section">
+            <h3 class="search-title">
+                <span>🔍</span>
+                <span>ශිෂ්‍යයෙකු සොයන්න - Search Student</span>
+            </h3>
+
+            <div class="form-group">
+                <label>ශිෂ්‍ය අංකය හෝ නම ටයිප් කරන්න:</label>
+                <input type="text" id="studentSearchInput" placeholder="උදා: s0001 හෝ ශිෂ්‍ය නම...">
+                <div class="helper-text">Type student number (s0001) or student name to search</div>
+            </div>
+
+            <div class="form-group">
+                <label>හෝ ලැයිස්තුවෙන් තෝරන්න:</label>
+                <select id="studentSelect">
+                    <option value="">-- ශිෂ්‍යයෙකු තෝරන්න / Select Student --</option>
+                </select>
+            </div>
+
+            <button class="btn btn-primary" onclick="generateReport()">
+                <span>📊</span>
+                <span>වාර්තාව ජනනය කරන්න / Generate Report</span>
+            </button>
+        </div>
+
+        <div id="reportContainer" class="report-container"></div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://uqgzlaxsnknheoerbfus.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxZ3psYXhzbmtuaGVvZXJiZnVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MDQzMTEsImV4cCI6MjA2MDM4MDMxMX0.O5dNUizqZ5kfwTs0mHLEorqOAqjZFjWakp2Q484MKEk';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        function showAlert(message, type = 'success') {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.className = `alert alert-${type} show`;
+            alertBox.textContent = message;
+            setTimeout(() => alertBox.classList.remove('show'), 5000);
+        }
+
+        function getLastTwoMonths() {
+            const now = new Date();
+            const months = [];
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            
+            for (let i = 0; i < 2; i++) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                months.push({
+                    name: monthNames[d.getMonth()],
+                    year: d.getFullYear(),
+                    display: `${monthNames[d.getMonth()]} ${d.getFullYear()}`
+                });
+            }
+            
+            return months;
+        }
+
+        function filterDatesByMonth(dateString, month, year) {
+            if (!dateString) return [];
+            const dates = dateString.split(',').map(d => d.trim()).filter(d => d);
+            return dates.filter(date => {
+                return date.includes(`/${month}/${year}`);
+            });
+        }
+
+        async function loadStudents() {
+            try {
+                const { data: students, error } = await supabase
+                    .from('sipminireport')
+                    .select('studentno, studentname')
+                    .order('studentname');
+
+                if (error) throw error;
+
+                const uniqueStudents = {};
+                students.forEach(s => {
+                    if (!uniqueStudents[s.studentno]) {
+                        uniqueStudents[s.studentno] = s.studentname;
+                    }
+                });
+
+                const select = document.getElementById('studentSelect');
+                select.innerHTML = '<option value="">-- ශිෂ්‍යයෙකු තෝරන්න / Select Student --</option>' +
+                    Object.entries(uniqueStudents)
+                        .sort((a, b) => a[1].localeCompare(b[1]))
+                        .map(([no, name]) => 
+                            `<option value="${no}">${name} (${no})</option>`
+                        ).join('');
+
+                setupSearchFunctionality(uniqueStudents);
+            } catch (error) {
+                showAlert('Error loading students: ' + error.message, 'error');
+            }
+        }
+
+        function setupSearchFunctionality(uniqueStudents) {
+            const searchInput = document.getElementById('studentSearchInput');
+            const select = document.getElementById('studentSelect');
+
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                
+                if (!searchTerm) {
+                    select.innerHTML = '<option value="">-- ශිෂ්‍යයෙකු තෝරන්න / Select Student --</option>' +
+                        Object.entries(uniqueStudents)
+                            .sort((a, b) => a[1].localeCompare(b[1]))
+                            .map(([no, name]) => 
+                                `<option value="${no}">${name} (${no})</option>`
+                            ).join('');
+                    return;
+                }
+
+                const filtered = Object.entries(uniqueStudents).filter(([no, name]) => 
+                    no.toLowerCase().includes(searchTerm) || 
+                    name.toLowerCase().includes(searchTerm)
+                );
+
+                if (filtered.length > 0) {
+                    select.innerHTML = '<option value="">-- ශිෂ්‍යයෙකු තෝරන්න / Select Student --</option>' +
+                        filtered.map(([no, name]) => 
+                            `<option value="${no}">${name} (${no})</option>`
+                        ).join('');
+                    
+                    if (filtered.length === 1) {
+                        select.value = filtered[0][0];
+                    }
+                } else {
+                    select.innerHTML = '<option value="">No students found</option>';
+                }
+            });
+
+            select.addEventListener('change', function() {
+                if (this.value) {
+                    const selectedName = uniqueStudents[this.value];
+                    searchInput.value = `${selectedName} (${this.value})`;
+                }
+            });
+        }
+
+        async function generateReport() {
+            const studentNo = document.getElementById('studentSelect').value;
+            
+            if (!studentNo) {
+                showAlert('කරුණාකර ශිෂ්‍යයෙකු තෝරන්න / Please select a student', 'error');
+                return;
+            }
+
+            try {
+                const { data: classes, error } = await supabase
+                    .from('sipminireport')
+                    .select('*')
+                    .eq('studentno', studentNo);
+
+                if (error) throw error;
+
+                if (!classes || classes.length === 0) {
+                    showAlert('දත්ත හමු නොවිණි / No data found', 'error');
+                    return;
+                }
+
+                displayReport(classes);
+            } catch (error) {
+                showAlert('Error: ' + error.message, 'error');
+            }
+        }
+
+        function displayReport(classes) {
+            const student = classes[0];
+            const lastTwoMonths = getLastTwoMonths();
+            
+            let totalClasses = classes.length;
+            let totalAttendance = 0;
+            let totalPayments = 0;
+            let totalFees = 0;
+            let totalBalance = 0;
+
+            let monthlyStats = lastTwoMonths.map(month => ({
+                month: month.display,
+                attendance: 0,
+                payments: 0
+            }));
+
+            classes.forEach(cls => {
+                const fee = parseFloat(cls.monthly_fee) || 0;
+                totalFees += fee;
+
+                const attendances = cls.sreport ? cls.sreport.split(',').filter(a => a.trim()) : [];
+                totalAttendance += attendances.length;
+
+                const payments = cls.payment ? cls.payment.split(',').filter(p => p.trim()) : [];
+                totalPayments += payments.length;
+
+                const balance = parseFloat(cls.balance_amount) || 0;
+                totalBalance += balance;
+
+                lastTwoMonths.forEach((month, index) => {
+                    const monthAttendances = filterDatesByMonth(cls.sreport, month.name, month.year);
+                    const monthPayments = filterDatesByMonth(cls.payment, month.name, month.year);
+                    
+                    monthlyStats[index].attendance += monthAttendances.length;
+                    monthlyStats[index].payments += monthPayments.length;
+                });
+            });
+
+            const reportHTML = `
+                <div class="report-header">
+                    <h2>👨‍🎓 ශිෂ්‍ය වාර්තාව - Student Report</h2>
+                    <h3>${student.studentname}</h3>
+                    <p>අංකය: ${student.studentno} | දුරකථනය: ${student.phoneno || 'N/A'}</p>
+                </div>
+
+                <div class="summary-section">
+                    <h3 style="color: #667eea; margin-bottom: 10px;">📊 සම්පූර්ණ සාරාංශය - Overall Summary</h3>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <div class="summary-number">${totalClasses}</div>
+                            <div class="summary-label">පන්ති සංඛ්‍යාව<br>Total Classes</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-number">${totalAttendance}</div>
+                            <div class="summary-label">සම්පූර්ණ සහභාගීත්වය<br>Total Attendance</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-number">${totalPayments}</div>
+                            <div class="summary-label">සම්පූර්ණ ගෙවීම්<br>Total Payments</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-number ${totalBalance < 0 ? 'balance-negative' : 'balance-positive'}">
+                                Rs. ${Math.abs(totalBalance).toFixed(2)}
+                            </div>
+                            <div class="summary-label">
+                                ${totalBalance < 0 ? 'හිඟ මුදල<br>Balance Due' : 'අතිරේක<br>Advance'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="monthly-breakdown">
+                        <h4>📅 අවසන් මාස 2ක විස්තර - Last 2 Months Breakdown</h4>
+                        <div class="month-stats">
+                            ${monthlyStats.map(monthData => `
+                                <div class="month-card">
+                                    <h5>📆 ${monthData.month}</h5>
+                                    <div class="month-detail">
+                                        <span class="month-detail-label">සහභාගීත්වය / Attendance:</span>
+                                        <span class="month-detail-value">${monthData.attendance}</span>
+                                    </div>
+                                    <div class="month-detail">
+                                        <span class="month-detail-label">ගෙවීම් / Payments:</span>
+                                        <span class="month-detail-value">${monthData.payments}</span>
+                                    </div>
+                                    ${monthData.attendance === 0 && monthData.payments === 0 ? 
+                                        '<div class="no-data">මෙම මාසයේ දත්ත නැත / No data for this month</div>' : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-section">
+                    <h3>📚 පන්ති විස්තර - Class Details</h3>
+                    ${classes.map(cls => {
+                        const fee = parseFloat(cls.monthly_fee) || 0;
+                        const attendances = cls.sreport ? cls.sreport.split(',').filter(a => a.trim()) : [];
+                        const payments = cls.payment ? cls.payment.split(',').filter(p => p.trim()) : [];
+                        const balance = parseFloat(cls.balance_amount) || 0;
+
+                        return `
+                            <div class="class-card">
+                                <div class="class-header">
+                                    <div class="class-title">${cls.subject}</div>
+                                    <div class="fee-badge ${fee === 0 ? 'free' : ''}">
+                                        ${fee === 0 ? 'FREE' : 'Rs. ' + fee.toFixed(2)}
+                                    </div>
+                                </div>
+                                <p style="margin-bottom: 15px; color: #666;">
+                                    <strong>ගුරුවරයා / Teacher:</strong> ${cls.teachername}
+                                </p>
+                                <div class="class-details">
+                                    <div class="detail-item">
+                                        <div class="detail-label">සම්පූර්ණ සහභාගීත්වය / Total Attendance</div>
+                                        <div class="detail-value">${attendances.length} days</div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">සම්පූර්ණ ගෙවීම් / Total Payments</div>
+                                        <div class="detail-value">${payments.length} months</div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">මාසික ගාස්තුව / Monthly Fee</div>
+                                        <div class="detail-value">Rs. ${fee.toFixed(2)}</div>
+                                    </div>
+                                    <div class="detail-item">
+                                        <div class="detail-label">ශේෂය / Balance</div>
+                                        <div class="detail-value ${balance < 0 ? 'balance-negative' : 'balance-positive'}">
+                                            ${balance < 0 ? '-' : '+'} Rs. ${Math.abs(balance).toFixed(2)}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+
+                <div class="report-actions">
+                    <button class="btn btn-warning" onclick="downloadPDF()">
+                        <span>📄</span>
+                        <span>PDF බාගන්න / Download PDF</span>
+                    </button>
+                    <button class="btn btn-whatsapp" onclick="shareWhatsApp()">
+                        <span>📱</span>
+                        <span>WhatsApp Share</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="printReport()">
+                        <span>🖨️</span>
+                        <span>Print</span>
+                    </button>
+                </div>
+            `;
+
+            const reportContainer = document.getElementById('reportContainer');
+            reportContainer.innerHTML = reportHTML;
+            reportContainer.classList.add('show');
+            
+            showAlert('වාර්තාව සාර්ථකව ජනනය විය! / Report generated successfully!', 'success');
+        }
+
+        function downloadPDF() {
+            const element = document.getElementById('reportContainer');
+            const opt = {
+                margin: 10,
+                filename: 'student-report.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function printReport() {
+            window.print();
+        }
+
+        function shareWhatsApp() {
+            const student = document.querySelector('.report-header h3').textContent;
+            const studentNo = document.querySelector('.report-header p').textContent.split('|')[0].replace('අංකය:', '').trim();
+            
+            let message = `*SIPMINI Student Report*%0A%0A`;
+            message += `👨‍🎓 *Student:* ${student}%0A`;
+            message += `🆔 *${studentNo}*%0A%0A`;
+            
+            const summaryItems = document.querySelectorAll('.summary-item');
+            summaryItems.forEach(item => {
+                const number = item.querySelector('.summary-number').textContent;
+                const label = item.querySelector('.summary-label').textContent.split('\n')[0];
+                message += `${label}: ${number}%0A`;
+            });
+            
+            message += `%0A_Generated from SIPMINI Portal_`;
+            
+            const url = `https://wa.me/?text=${message}`;
+            window.open(url, '_blank');
+        }
+
+        window.addEventListener('DOMContentLoaded', loadStudents);
+    </script>
+</body>
+</html>
