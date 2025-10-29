@@ -25,36 +25,92 @@
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            padding: 30px;
+            overflow: hidden;
         }
 
-        h1 {
-            text-align: center;
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            margin: 0;
+        }
+
+        .back-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            border: 2px solid white;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: white;
             color: #667eea;
-            margin-bottom: 10px;
+        }
+
+        .tabs-container {
+            display: flex;
+            background: #f5f5f5;
+            padding: 0;
+            overflow-x: auto;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 18px 25px;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            color: #666;
+            font-size: 15px;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.3s;
+            position: relative;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .tab:hover {
+            background: #e8e8e8;
+            color: #333;
+        }
+
+        .tab.active {
+            color: #667eea;
+            background: white;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #667eea;
+        }
+
+        .content-wrapper {
+            padding: 30px;
         }
 
         .subtitle {
             text-align: center;
             color: #666;
             margin-bottom: 30px;
-        }
-
-        .back-btn {
-            display: inline-block;
-            padding: 12px 25px;
-            background: #6c757d;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            transition: all 0.3s;
-        }
-
-        .back-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
         .search-box {
@@ -228,58 +284,94 @@
             font-size: 14px;
             opacity: 0.9;
         }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .tabs-container {
+                justify-content: flex-start;
+            }
+
+            .tab {
+                padding: 15px 15px;
+                font-size: 13px;
+            }
+
+            .content-wrapper {
+                padding: 20px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <a href="index.html" class="back-btn">🔙 පසු බස - Back to Home</a>
-        
-        <h1>✏️ සංස්කරණය කරන්න - Edit Records</h1>
-        <p class="subtitle">Search, Edit and Delete Student Records</p>
-
-        <div id="alertBox" class="alert"></div>
-
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-number" id="totalRecords">0</div>
-                <div class="stat-label">Total Records</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="displayedRecords">0</div>
-                <div class="stat-label">Displayed Records</div>
-            </div>
+        <div class="header">
+            <h1>🎓 SIPMINI Admin Panel</h1>
+            <a href="index.html" class="back-btn">🔙 පසු බස</a>
         </div>
 
-        <div class="search-box">
-            <h3 style="color: #667eea; margin-bottom: 15px;">🔍 සොයන්න - Search & Filter</h3>
-            
-            <div class="form-group">
-                <label>Search by:</label>
-                <input type="text" id="searchInput" placeholder="Student number, name, teacher, or subject">
-            </div>
-
-            <div class="form-group">
-                <label>Filter by Teacher:</label>
-                <select id="teacherFilter" onchange="filterByTeacher()">
-                    <option value="">-- All Teachers --</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Filter by Subject:</label>
-                <select id="subjectFilter" onchange="filterBySubject()">
-                    <option value="">-- All Subjects --</option>
-                </select>
-            </div>
-
-            <div class="filter-buttons">
-                <button class="btn btn-primary" onclick="searchRecords()">🔍 Search</button>
-                <button class="btn btn-secondary" onclick="showAllRecords()">📋 Show All</button>
-                <button class="btn btn-danger" onclick="clearSearch()">🗑️ Clear All Filters</button>
-            </div>
+        <div class="tabs-container">
+            <a href="ms.html" class="tab">Manage Students</a>
+            <a href="er.html" class="tab active">Edit Records</a>
+            <a href="ar.html" class="tab">Account Reports</a>
+            <a href="sr.html" class="tab">Student Reports</a>
+            <a href="https://eduhelp-lk.github.io/sipmini-institute/" target="_blank" class="tab">Management System</a>
         </div>
 
-        <div id="editSearchResults"></div>
+        <div class="content-wrapper">
+            <h2 style="text-align: center; color: #667eea; margin-bottom: 10px;">✏️ සංස්කරණය කරන්න</h2>
+            <p class="subtitle">Search, Edit and Delete Student Records</p>
+
+            <div id="alertBox" class="alert"></div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalRecords">0</div>
+                    <div class="stat-label">Total Records</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="displayedRecords">0</div>
+                    <div class="stat-label">Displayed Records</div>
+                </div>
+            </div>
+
+            <div class="search-box">
+                <h3 style="color: #667eea; margin-bottom: 15px;">🔍 සොයන්න - Search & Filter</h3>
+                
+                <div class="form-group">
+                    <label>Search by:</label>
+                    <input type="text" id="searchInput" placeholder="Student number, name, teacher, or subject">
+                </div>
+
+                <div class="form-group">
+                    <label>Filter by Teacher:</label>
+                    <select id="teacherFilter" onchange="filterByTeacher()">
+                        <option value="">-- All Teachers --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Filter by Subject:</label>
+                    <select id="subjectFilter" onchange="filterBySubject()">
+                        <option value="">-- All Subjects --</option>
+                    </select>
+                </div>
+
+                <div class="filter-buttons">
+                    <button class="btn btn-primary" onclick="searchRecords()">🔍 Search</button>
+                    <button class="btn btn-secondary" onclick="showAllRecords()">📋 Show All</button>
+                    <button class="btn btn-danger" onclick="clearSearch()">🗑️ Clear All Filters</button>
+                </div>
+            </div>
+
+            <div id="editSearchResults"></div>
+        </div>
     </div>
 
     <!-- Edit Record Modal -->
