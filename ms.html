@@ -25,7 +25,7 @@
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            padding: 30px;
+            overflow: hidden;
             animation: fadeIn 0.5s ease;
         }
 
@@ -41,38 +41,100 @@
         }
 
         .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 26px;
+            margin: 0;
+        }
+
+        .back-btn {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            border: 2px solid white;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .tabs-container {
+            display: flex;
+            background: #f5f5f5;
+            padding: 0;
+            overflow-x: auto;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 18px 25px;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            color: #666;
+            font-size: 15px;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.3s;
+            position: relative;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .tab:hover {
+            background: #e8e8e8;
+            color: #333;
+        }
+
+        .tab.active {
+            color: #667eea;
+            background: white;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #667eea;
+        }
+
+        .content-wrapper {
+            padding: 30px;
+        }
+
+        .page-header {
             text-align: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 3px solid #667eea;
         }
 
-        h1 {
+        .page-header h2 {
             color: #667eea;
             margin-bottom: 10px;
-            font-size: 32px;
+            font-size: 28px;
         }
 
         .subtitle {
             color: #666;
             font-size: 16px;
-        }
-
-        .back-btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background: #6c757d;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .back-btn:hover {
-            background: #5a6268;
-            transform: translateX(-5px);
         }
 
         .stats {
@@ -115,7 +177,7 @@
             border-left: 5px solid #667eea;
         }
 
-        .form-section h2 {
+        .form-section h3 {
             color: #667eea;
             margin-bottom: 20px;
             font-size: 22px;
@@ -217,7 +279,7 @@
             margin-top: 30px;
         }
 
-        .students-section h2 {
+        .students-section h3 {
             color: #667eea;
             margin-bottom: 20px;
             font-size: 24px;
@@ -237,7 +299,7 @@
             transform: translateX(5px);
         }
 
-        .student-card h3 {
+        .student-card h4 {
             color: #333;
             margin-bottom: 10px;
             font-size: 20px;
@@ -398,12 +460,29 @@
         }
 
         @media (max-width: 768px) {
-            .container {
+            .header {
                 padding: 20px;
             }
 
-            h1 {
-                font-size: 24px;
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .tabs-container {
+                justify-content: flex-start;
+            }
+
+            .tab {
+                padding: 15px 15px;
+                font-size: 13px;
+            }
+
+            .content-wrapper {
+                padding: 20px;
+            }
+
+            .page-header h2 {
+                font-size: 22px;
             }
 
             .stats {
@@ -435,107 +514,120 @@
 </head>
 <body>
     <div class="container">
-        <a href="index.html" class="back-btn">← පිටුපසට</a>
-        
         <div class="header">
-            <h1>📚 සිසුන් කළමනාකරණය - Manage Students</h1>
-            <p class="subtitle">ශිෂ්‍ය තොරතුරු එකතු කිරීම සහ කළමනාකරණය</p>
+            <h1>🎓 SIPMINI Admin Panel</h1>
+            <a href="index.html" class="back-btn">🔙 පසු බස</a>
         </div>
 
-        <div id="alertBox" class="alert"></div>
-
-        <!-- Statistics Cards -->
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-number" id="totalStudents">0</div>
-                <div class="stat-label">මුළු ශිෂ්‍ය සංඛ්‍යාව<br>Total Students</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="totalClasses">0</div>
-                <div class="stat-label">මුළු පන්ති සංඛ්‍යාව<br>Total Classes</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="freeClasses">0</div>
-                <div class="stat-label">නොමිලේ පන්ති<br>Free Classes</div>
-            </div>
+        <div class="tabs-container">
+            <a href="ms.html" class="tab active">Manage Students</a>
+            <a href="er.html" class="tab">Edit Records</a>
+            <a href="ar.html" class="tab">Account Reports</a>
+            <a href="sr.html" class="tab">Student Reports</a>
+            <a href="https://eduhelp-lk.github.io/sipmini-institute/" target="_blank" class="tab">Management System</a>
         </div>
 
-        <!-- Add Student Form -->
-        <div class="form-section">
-            <h2>➕ නව ශිෂ්‍යයෙකු / පන්තියක් එකතු කරන්න</h2>
-            <form id="studentForm">
-                <div class="form-group">
-                    <label>ශිෂ්‍ය අංකය - Student Number *</label>
-                    <input type="text" id="studentno" placeholder="s0001" required readonly>
-                    <div class="helper-text">
-                        ස්වයංක්‍රීයව ජනනය වේ. එකම අංකය බහු පන්ති සඳහා භාවිතා කරයි
-                        <br>Auto-generated. Same number for multiple classes
+        <div class="content-wrapper">
+            <div class="page-header">
+                <h2>📚 සිසුන් කළමනාකරණය</h2>
+                <p class="subtitle">ශිෂ්‍ය තොරතුරු එකතු කිරීම සහ කළමනාකරණය</p>
+            </div>
+
+            <div id="alertBox" class="alert"></div>
+
+            <!-- Statistics Cards -->
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalStudents">0</div>
+                    <div class="stat-label">මුළු ශිෂ්‍ය සංඛ්‍යාව<br>Total Students</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalClasses">0</div>
+                    <div class="stat-label">මුළු පන්ති සංඛ්‍යාව<br>Total Classes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="freeClasses">0</div>
+                    <div class="stat-label">නොමිලේ පන්ති<br>Free Classes</div>
+                </div>
+            </div>
+
+            <!-- Add Student Form -->
+            <div class="form-section">
+                <h3>➕ නව ශිෂ්‍යයෙකු / පන්තියක් එකතු කරන්න</h3>
+                <form id="studentForm">
+                    <div class="form-group">
+                        <label>ශිෂ්‍ය අංකය - Student Number *</label>
+                        <input type="text" id="studentno" placeholder="s0001" required readonly>
+                        <div class="helper-text">
+                            ස්වයංක්‍රීයව ජනනය වේ. එකම අංකය බහු පන්ති සඳහා භාවිතා කරයි
+                            <br>Auto-generated. Same number for multiple classes
+                        </div>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label>ශිෂ්‍ය නම - Student Name *</label>
-                    <input type="text" id="studentname" placeholder="නිමල් පෙරේරා" required>
-                </div>
-
-                <div class="form-group">
-                    <label>ගුරුවරයාගේ නම - Teacher Name *</label>
-                    <select id="teachername" required>
-                        <option value="">-- ගුරුවරයෙකු තෝරන්න - Select Teacher --</option>
-                        <option value="මහාචාර්ය චරිත් ජයතිලක">මහාචාර්ය චරිත් ජයතිලක</option>
-                        <option value="ධම්මික ගීකියනගේ">ධම්මික ගීකියනගේ</option>
-                        <option value="දිනේෂ් හල්ඕවිට">දිනේෂ් හල්ඕවිට</option>
-                        <option value="ඉරේෂා පින්තු">ඉරේෂා පින්තු</option>
-                        <option value="හර්ෂණ ලියනආරච්චි">හර්ෂණ ලියනආරච්චි</option>
-                        <option value="නිෂා ඉහළගම">නිෂා ඉහළගම</option>
-                        <option value="අමිල උඩවත්ත">අමිල උඩවත්ත</option>
-                        <option value="සුපෙම් අල්මේදා">සුපෙම් අල්මේදා</option>
-                        <option value="ප්‍රසාධි ජයතිලක">ප්‍රසාධි ජයතිලක</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>විෂයය - Subject *</label>
-                    <select id="subject" required>
-                        <option value="">-- විෂයය තෝරන්න - Select Subject --</option>
-                        <option value="Physics">Physics - භෞතික විද්‍යාව</option>
-                        <option value="Combined Maths">Combined Maths - ඒකාබද්ධ ගණිතය</option>
-                        <option value="Chemistry">Chemistry - රසායන විද්‍යාව</option>
-                        <option value="Maths">Maths - ගණිතය</option>
-                        <option value="Sinhala">Sinhala - සිංහල</option>
-                        <option value="English">English - ඉංග්‍රීසි</option>
-                        <option value="History">History - ඉතිහාසය</option>
-                        <option value="Art">Art - චිත්‍ර</option>
-                        <option value="Science">Science - විද්‍යාව</option>
-                        <option value="Bio Science">Bio Science - ජීව විද්‍යාව</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>දුරකථන අංකය - Phone Number</label>
-                    <input type="text" id="phoneno" placeholder="0771234567">
-                    <div class="helper-text">Optional - විකල්පයකි</div>
-                </div>
-
-                <div class="form-group">
-                    <label>මාසික ගාස්තුව - Monthly Fee (Rs.) *</label>
-                    <input type="number" id="monthly_fee" placeholder="0 = නොමිලේ / FREE" required min="0" step="0.01">
-                    <div class="helper-text">
-                        0 ඇතුළත් කළහොත් නොමිලේ පන්තියක් ලෙස සලකයි
-                        <br>Enter 0 for FREE class
+                    <div class="form-group">
+                        <label>ශිෂ්‍ය නම - Student Name *</label>
+                        <input type="text" id="studentname" placeholder="නිමල් පෙරේරා" required>
                     </div>
+
+                    <div class="form-group">
+                        <label>ගුරුවරයාගේ නම - Teacher Name *</label>
+                        <select id="teachername" required>
+                            <option value="">-- ගුරුවරයෙකු තෝරන්න - Select Teacher --</option>
+                            <option value="මහාචාර්ය චරිත් ජයතිලක">මහාචාර්ය චරිත් ජයතිලක</option>
+                            <option value="ධම්මික ගීකියනගේ">ධම්මික ගීකියනගේ</option>
+                            <option value="දිනේෂ් හල්ඕවිට">දිනේෂ් හල්ඕවිට</option>
+                            <option value="ඉරේෂා පින්තු">ඉරේෂා පින්තු</option>
+                            <option value="හර්ෂණ ලියනආරච්චි">හර්ෂණ ලියනආරච්චි</option>
+                            <option value="නිෂා ඉහළගම">නිෂා ඉහළගම</option>
+                            <option value="අමිල උඩවත්ත">අමිල උඩවත්ත</option>
+                            <option value="සුපෙම් අල්මේදා">සුපෙම් අල්මේදා</option>
+                            <option value="ප්‍රසාධි ජයතිලක">ප්‍රසාධි ජයතිලක</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>විෂයය - Subject *</label>
+                        <select id="subject" required>
+                            <option value="">-- විෂයය තෝරන්න - Select Subject --</option>
+                            <option value="Physics">Physics - භෞතික විද්‍යාව</option>
+                            <option value="Combined Maths">Combined Maths - ඒකාබද්ධ ගණිතය</option>
+                            <option value="Chemistry">Chemistry - රසායන විද්‍යාව</option>
+                            <option value="Maths">Maths - ගණිතය</option>
+                            <option value="Sinhala">Sinhala - සිංහල</option>
+                            <option value="English">English - ඉංග්‍රීසි</option>
+                            <option value="History">History - ඉතිහාසය</option>
+                            <option value="Art">Art - චිත්‍ර</option>
+                            <option value="Science">Science - විද්‍යාව</option>
+                            <option value="Bio Science">Bio Science - ජීව විද්‍යාව</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>දුරකථන අංකය - Phone Number</label>
+                        <input type="text" id="phoneno" placeholder="0771234567">
+                        <div class="helper-text">Optional - විකල්පයකි</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>මාසික ගාස්තුව - Monthly Fee (Rs.) *</label>
+                        <input type="number" id="monthly_fee" placeholder="0 = නොමිලේ / FREE" required min="0" step="0.01">
+                        <div class="helper-text">
+                            0 ඇතුළත් කළහොත් නොමිලේ පන්තියක් ලෙස සලකයි
+                            <br>Enter 0 for FREE class
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn">➕ පන්තිය එකතු කරන්න - Add Class</button>
+                    <button type="button" class="btn btn-secondary" id="refreshBtn">🔄 නැවුම් කරන්න - Refresh</button>
+                </form>
+            </div>
+
+            <!-- Students List -->
+            <div class="students-section">
+                <h3>📋 වත්මන් ශිෂ්‍යයින් සහ පන්ති - Current Students & Classes</h3>
+                <div id="studentsList">
+                    <div class="loading">📥 දත්ත පූරණය වෙමින්... Loading data...</div>
                 </div>
-
-                <button type="submit" class="btn">➕ පන්තිය එකතු කරන්න - Add Class</button>
-                <button type="button" class="btn btn-secondary" id="refreshBtn">🔄 නැවුම් කරන්න - Refresh</button>
-            </form>
-        </div>
-
-        <!-- Students List -->
-        <div class="students-section">
-            <h2>📋 වත්මන් ශිෂ්‍යයින් සහ පන්ති - Current Students & Classes</h2>
-            <div id="studentsList">
-                <div class="loading">📥 දත්ත පූරණය වෙමින්... Loading data...</div>
             </div>
         </div>
     </div>
@@ -700,7 +792,7 @@
 
                     return `
                         <div class="student-card">
-                            <h3>${data.studentname} (${studentno})</h3>
+                            <h4>${data.studentname} (${studentno})</h4>
                             <p>
                                 <strong>📞 දුරකථන - Phone:</strong> ${data.phoneno || 'N/A'} | 
                                 <strong>📚 පන්ති - Classes:</strong> ${data.classes.length}
