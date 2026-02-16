@@ -110,12 +110,31 @@
             transform: translateY(-2px);
         }
 
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .error-message {
             color: #e74c3c;
             font-size: 14px;
             margin-top: 10px;
             text-align: center;
             display: none;
+        }
+
+        .info-box {
+            margin-top: 20px;
+            padding: 12px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .info-box p {
+            font-size: 12px;
+            color: #1565c0;
         }
 
         /* Admin Panel Styles */
@@ -318,8 +337,8 @@
         </div>
         <form id="loginForm">
             <div class="form-group">
-                <label for="username">පරිශීලක නාමය</label>
-                <input type="text" id="username" placeholder="පරිශීලක නාමය ඇතුළත් කරන්න" required>
+                <label for="username">ප්‍රවේශ කේතය</label>
+                <input type="text" id="username" placeholder="ප්‍රවේශ කේතය ඇතුළත් කරන්න" required>
             </div>
             <div class="form-group">
                 <label for="password">මුරපදය</label>
@@ -328,6 +347,9 @@
             <button type="submit" class="login-btn">පුරනය වන්න</button>
             <div class="error-message" id="errorMessage">වැරදි පරිශීලක නාමයක් හෝ මුරපදයක්!</div>
         </form>
+        <div class="info-box">
+            <p>🔒 ආරක්ෂිත පිවිසුමක් - Supabase Database Authentication</p>
+        </div>
     </div>
 
     <!-- Admin Panel -->
@@ -387,44 +409,129 @@
                 <div class="content-card">
                     <h2>🏫 කළමනාකරණ පද්ධතිය</h2>
                     <p>සම්පූර්ණ ආයතන කළමනාකරණ පද්ධතිය වෙත පිවිසෙන්න. මෙහිදී ඔබට සියලු මූලික කළමනාකරණ කාර්යයන් සිදු කළ හැකිය.</p>
-                    <a href="https://eduhelp-lk.github.io/sipmini-institute/" target="_blank" class="action-btn external-link">කළමනාකරණ පද්ධතිය විවෘත කරන්න ↗</a>
+                    <a href="https://amilaeduhelp.github.io/sipmini-institute/" target="_blank" class="action-btn external-link">කළමනාකරණ පද්ධතිය විවෘත කරන්න ↗</a>
                 </div>
             </div>
         </div>
     </div>
 
      <script>
-        // Default login credentials
-        const DEFAULT_USERNAME = 'admin';
-        const DEFAULT_PASSWORD = 'sipmini2025';
+        // Supabase configuration
+        const SUPABASE_URL = 'https://uqgzlaxsnknheoerbfus.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxZ3psYXhzbmtuaGVvZXJiZnVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjM2MTUsImV4cCI6MjA3OTI4MzYxNX0.IYWZ7ukx8J-GJMWy7cMk2BWnmzJmJjjE93yEmJie7nQ';
+
+        // Hash password function (SHA-256)
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
 
         // Check if user is already logged in on page load
         window.addEventListener('DOMContentLoaded', function() {
             const isLoggedIn = sessionStorage.getItem('sipminLoggedIn');
-            if (isLoggedIn === 'true') {
+            const adminName = sessionStorage.getItem('sipminAdminName');
+            if (isLoggedIn === 'true' && adminName) {
                 document.getElementById('loginContainer').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
+                
+                // Update header with admin name
+                const panelHeader = document.querySelector('.panel-header h1');
+                panelHeader.textContent = `🎓 SIPMINI Admin Panel - ${adminName}`;
             }
         });
 
         // Login form handling
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const username = document.getElementById('username').value;
+            const username = document.getElementById('username').value.toLowerCase().trim();
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('errorMessage');
+            const loginBtn = document.querySelector('.login-btn');
+            
+            // Disable button and show loading
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'පරීක්ෂා කරමින්...';
+            errorMessage.style.display = 'none';
 
-            if (username === DEFAULT_USERNAME && password === DEFAULT_PASSWORD) {
-                // Save login state
-                sessionStorage.setItem('sipminLoggedIn', 'true');
-                
-                document.getElementById('loginContainer').style.display = 'none';
-                document.getElementById('adminPanel').style.display = 'block';
-                errorMessage.style.display = 'none';
-            } else {
+            try {
+                // Query credentials_sipmini table
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/credentials_sipmini?access_code=ilike.${username}&select=*`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data && data.length > 0) {
+                    const credential = data[0];
+
+                    // Check if account is active
+                    if (!credential.is_active) {
+                        errorMessage.textContent = 'මෙම ගිණුම අක්‍රිය කර ඇත. කරුණාකර පරිපාලකයා සම්බන්ධ කර ගන්න.';
+                        errorMessage.style.display = 'block';
+                        return;
+                    }
+
+                    // Verify password
+                    const inputHash = await hashPassword(password);
+                    
+                    if (credential.password_hash === inputHash) {
+                        // Update last_login timestamp
+                        try {
+                            await fetch(`${SUPABASE_URL}/rest/v1/credentials_sipmini?id=eq.${credential.id}`, {
+                                method: 'PATCH',
+                                headers: {
+                                    'apikey': SUPABASE_KEY,
+                                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                                    'Content-Type': 'application/json',
+                                    'Prefer': 'return=minimal'
+                                },
+                                body: JSON.stringify({
+                                    last_login: new Date().toISOString()
+                                })
+                            });
+                        } catch (e) {
+                            console.log('Last login update skipped');
+                        }
+
+                        // Get teacher name from database or fallback to access code
+                        const adminName = credential.teachername || username;
+
+                        // Save login state
+                        sessionStorage.setItem('sipminLoggedIn', 'true');
+                        sessionStorage.setItem('sipminAdminName', adminName);
+                        sessionStorage.setItem('sipminAccessCode', username);
+                        
+                        // Show admin panel
+                        document.getElementById('loginContainer').style.display = 'none';
+                        document.getElementById('adminPanel').style.display = 'block';
+                        errorMessage.style.display = 'none';
+                        
+                        // Update header with admin name
+                        const panelHeader = document.querySelector('.panel-header h1');
+                        panelHeader.textContent = `🎓 SIPMINI Admin Panel - ${adminName}`;
+                    } else {
+                        errorMessage.textContent = 'වැරදි මුරපදයකි!';
+                        errorMessage.style.display = 'block';
+                        document.getElementById('password').value = '';
+                    }
+                } else {
+                    errorMessage.textContent = 'වැරදි ප්‍රවේශ කේතයකි!';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorMessage.textContent = 'පිවිසීමේ දෝෂයක් ඇතිවිය. නැවත උත්සාහ කරන්න.';
                 errorMessage.style.display = 'block';
-                document.getElementById('password').value = '';
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'පුරනය වන්න';
             }
         });
 
@@ -448,12 +555,18 @@
         function logout() {
             // Clear login state
             sessionStorage.removeItem('sipminLoggedIn');
+            sessionStorage.removeItem('sipminAdminName');
+            sessionStorage.removeItem('sipminAccessCode');
             
             document.getElementById('adminPanel').style.display = 'none';
             document.getElementById('loginContainer').style.display = 'block';
             document.getElementById('username').value = '';
             document.getElementById('password').value = '';
             document.getElementById('errorMessage').style.display = 'none';
+            
+            // Reset header text
+            const panelHeader = document.querySelector('.panel-header h1');
+            panelHeader.textContent = '🎓 SIPMINI Admin Panel';
         }
     </script>
 </body>
