@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - ගුරු වාර්තා පද්ධතිය</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f85032 0%, #e73827 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 14px;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: popIn 0.3s ease;
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .success-message,
+        .error-message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .password-hash {
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+            word-break: break-all;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border-left: 4px solid #2563eb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .info-box-title {
+            font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 8px;
+        }
+
+        .info-box-text {
+            font-size: 14px;
+            color: #1e40af;
+        }
+
+        .teacher-name-badge {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>🔐 Admin Panel</h1>
+            <p class="subtitle">ගුරු වාර්තා පද්ධතිය - Credentials Management</p>
+
+            <div id="successMessage" class="success-message hidden"></div>
+            <div id="errorMessage" class="error-message hidden"></div>
+
+            <div class="info-box">
+                <div class="info-box-title">⚠️ වැදගත් තොරතුරු</div>
+                <div class="info-box-text">
+                    Password hash කර (SHA-256) ගබඩා වේ. ආරක්ෂාව සඳහා passwords plain text වලින් පෙන්වන්නේ නැත.
+                    අලුත් password එකක් සකසන විට පමණක් එය දැකිය හැක.
+                </div>
+            </div>
+
+            <div class="header">
+                <h2 style="color: #667eea; margin: 0;">සියලු Credentials</h2>
+                <button class="btn btn-success" onclick="openAddModal()">
+                    ➕ නව Credential එකතු කරන්න
+                </button>
+            </div>
+
+            <div id="loadingDiv" class="loading">
+                <div class="spinner"></div>
+                <p>දත්ත ලබා ගනිමින්...</p>
+            </div>
+
+            <div id="tableDiv" class="table-container hidden">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Access Code</th>
+                            <th>Teacher Name</th>
+                            <th>Password Hash</th>
+                            <th>Last Login</th>
+                            <th>තත්ත්වය</th>
+                            <th>ක්‍රියාමාර්ග</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Credential Modal -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">➕ නව Credential එකතු කරන්න</h3>
+            </div>
+
+            <div class="input-group">
+                <label>🔑 Access Code</label>
+                <input type="text" id="newAccessCode" placeholder="උදා: jaya, gee, pin">
+            </div>
+
+            <div class="input-group">
+                <label>👨‍🏫 Teacher Name (ගුරු නම)</label>
+                <input type="text" id="newTeacherName" placeholder="උදා: ජයසුන්දර, ගීතානි, පින්ටු">
+            </div>
+
+            <div class="input-group">
+                <label>🔒 Password</label>
+                <input type="password" id="newPassword" placeholder="අවම අක්ෂර 4">
+            </div>
+
+            <div class="input-group">
+                <label>✅ තත්ත්වය</label>
+                <select id="newIsActive">
+                    <option value="true">ක්‍රියාත්මක</option>
+                    <option value="false">අක්‍රිය</option>
+                </select>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-success" onclick="addCredential()">💾 සුරකින්න</button>
+                <button class="btn btn-danger" onclick="closeAddModal()">❌ අවලංගු කරන්න</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Credential Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">✏️ Credential සංස්කරණය කරන්න</h3>
+            </div>
+
+            <div class="input-group">
+                <label>🔑 Access Code</label>
+                <input type="text" id="editAccessCode" readonly style="background: #f0f0f0;">
+            </div>
+
+            <div class="input-group">
+                <label>👨‍🏫 Teacher Name (ගුරු නම)</label>
+                <input type="text" id="editTeacherName" placeholder="ගුරු නම ඇතුලත් කරන්න">
+            </div>
+
+            <div class="input-group">
+                <label>🔒 නව Password (අවශ්‍ය නම් පමණක්)</label>
+                <input type="password" id="editPassword" placeholder="Password වෙනස් කිරීමට අවම අක්ෂර 4">
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn btn-success" onclick="updateCredential()">💾 වෙනස් කරන්න</button>
+                <button class="btn btn-danger" onclick="closeEditModal()">❌ අවලංගු කරන්න</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://uqgzlaxsnknheoerbfus.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxZ3psYXhzbmtuaGVvZXJiZnVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjM2MTUsImV4cCI6MjA3OTI4MzYxNX0.IYWZ7ukx8J-GJMWy7cMk2BWnmzJmJjjE93yEmJie7nQ';
+
+        let currentEditId = null;
+        let allCredentials = [];
+
+        // Load credentials on page load
+        window.addEventListener('load', loadCredentials);
+
+        async function loadCredentials() {
+            const loadingDiv = document.getElementById('loadingDiv');
+            const tableDiv = document.getElementById('tableDiv');
+            
+            loadingDiv.classList.remove('hidden');
+            tableDiv.classList.add('hidden');
+
+            try {
+                console.log('🔄 Loading credentials...');
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/credentials_sipmini?select=*&order=access_code.asc`, {
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch credentials');
+
+                allCredentials = await response.json();
+                console.log('✅ Credentials loaded:', allCredentials.length);
+                renderTable();
+                
+                loadingDiv.classList.add('hidden');
+                tableDiv.classList.remove('hidden');
+            } catch (error) {
+                console.error('❌ Error loading credentials:', error);
+                showError('දත්ත ලබා ගැනීමේ දෝෂයක් ඇතිවිය');
+                loadingDiv.classList.add('hidden');
+            }
+        }
+
+        function renderTable() {
+            const tableBody = document.getElementById('tableBody');
+            
+            if (allCredentials.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">📭 Credentials හමු නොවීය</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = allCredentials.map(cred => {
+                const lastLogin = cred.last_login 
+                    ? new Date(cred.last_login).toLocaleString('si-LK')
+                    : 'කිසිදා නැත';
+                
+                const statusBadge = cred.is_active 
+                    ? '<span class="status-badge status-active">ක්‍රියාත්මක</span>'
+                    : '<span class="status-badge status-inactive">අක්‍රිය</span>';
+
+                const hashPreview = cred.password_hash 
+                    ? cred.password_hash.substring(0, 16) + '...'
+                    : 'N/A';
+
+                const teacherName = cred.teachername 
+                    ? `<span class="teacher-name-badge">${cred.teachername}</span>`
+                    : '<span style="color: #999;">N/A</span>';
+
+                return `
+                    <tr>
+                        <td>${cred.id}</td>
+                        <td><strong>${cred.access_code}</strong></td>
+                        <td>${teacherName}</td>
+                        <td class="password-hash" title="${cred.password_hash}">${hashPreview}</td>
+                        <td>${lastLogin}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <button class="btn btn-info btn-small" onclick="openEditModal(${cred.id})">
+                                ✏️ සංස්කරණය
+                            </button>
+                            <button class="btn btn-${cred.is_active ? 'danger' : 'success'} btn-small" 
+                                    onclick="toggleStatus(${cred.id}, ${!cred.is_active})">
+                                ${cred.is_active ? '🚫 අක්‍රිය' : '✅ ක්‍රියාත්මක'}
+                            </button>
+                            <button class="btn btn-danger btn-small" onclick="deleteCredential(${cred.id})">
+                                🗑️ මකන්න
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function openAddModal() {
+            document.getElementById('addModal').classList.add('active');
+            document.getElementById('newAccessCode').value = '';
+            document.getElementById('newTeacherName').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('newIsActive').value = 'true';
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModal').classList.remove('active');
+        }
+
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function addCredential() {
+            const accessCode = document.getElementById('newAccessCode').value.trim().toLowerCase();
+            const teacherName = document.getElementById('newTeacherName').value.trim();
+            const password = document.getElementById('newPassword').value;
+            const isActive = document.getElementById('newIsActive').value === 'true';
+
+            if (!accessCode || !password) {
+                alert('කරුණාකර Access Code සහ Password ඇතුලත් කරන්න');
+                return;
+            }
+
+            if (!teacherName) {
+                alert('කරුණාකර Teacher Name ඇතුලත් කරන්න');
+                return;
+            }
+
+            if (password.length < 4) {
+                alert('Password අවම අක්ෂර 4ක් තිබිය යුතුය');
+                return;
+            }
+
+            // Check if access code already exists
+            if (allCredentials.some(c => c.access_code === accessCode)) {
+                alert('මෙම Access Code දැනටමත් භාවිතා වේ');
+                return;
+            }
+
+            try {
+                console.log('💾 Adding new credential:', accessCode, teacherName);
+                const passwordHash = await hashPassword(password);
+
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/credentials_sipmini`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=representation'
+                    },
+                    body: JSON.stringify({
+                        access_code: accessCode,
+                        teachername: teacherName,
+                        password_hash: passwordHash,
+                        is_active: isActive
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('❌ Server error:', errorData);
+                    throw new Error(JSON.stringify(errorData));
+                }
+
+                console.log('✅ Credential added successfully');
+                showSuccess('✅ Credential සාර්ථකව එකතු කරන ලදී!');
+                closeAddModal();
+                loadCredentials();
+            } catch (error) {
+                console.error('❌ Error adding credential:', error);
+                showError('Credential එකතු කිරීමේ දෝෂයක්: ' + error.message);
+            }
+        }
+
+        function openEditModal(id) {
+            currentEditId = id;
+            const credential = allCredentials.find(c => c.id === id);
+            
+            if (credential) {
+                document.getElementById('editAccessCode').value = credential.access_code;
+                document.getElementById('editTeacherName').value = credential.teachername || '';
+                document.getElementById('editPassword').value = '';
+                document.getElementById('editModal').classList.add('active');
+            }
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+            currentEditId = null;
+        }
+
+        async function updateCredential() {
+            const teacherName = document.getElementById('editTeacherName').value.trim();
+            const password = document.getElementById('editPassword').value;
+
+            if (!teacherName) {
+                alert('කරුණාකර Teacher Name ඇතුලත් කරන්න');
+                return;
+            }
+
+            // Prepare update data
+            const updateData = {
+                teachername: teacherName
+            };
+
+            // If password is provided, update it too
+            if (password) {
+                if (password.length < 4) {
+                    alert('Password අවම අක්ෂර 4ක් තිබිය යුතුය');
+                    return;
+                }
+                updateData.password_hash = await hashPassword(password);
+            }
+
+            try {
+                console.log('💾 Updating credential ID:', currentEditId, updateData);
+
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/credentials_sipmini?id=eq.${currentEditId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                if (!response.ok) throw new Error('Failed to update credential');
+
+                console.log('✅ Credential updated successfully');
+                showSuccess('✅ Credential සාර්ථකව වෙනස් කරන ලදී!');
+                closeEditModal();
+                loadCredentials();
+            } catch (error) {
+                console.error('❌ Error updating credential:', error);
+                showError('Credential වෙනස් කිරීමේ දෝෂයක් ඇතිවිය');
+            }
+        }
+
+        async function toggleStatus(id, newStatus) {
+            if (!confirm(`මෙම credential එක ${newStatus ? 'ක්‍රියාත්මක' : 'අක්‍රිය'} කරන්නද?`)) {
+                return;
+            }
+
+            try {
+                console.log('🔄 Toggling status for ID:', id, 'to', newStatus);
+
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/credentials_sipmini?id=eq.${id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({
+                        is_active: newStatus
+                    })
+                });
+
+                if (!response.ok) throw new Error('Failed to toggle status');
+
+                console.log('✅ Status toggled successfully');
+                showSuccess(`✅ තත්ත්වය ${newStatus ? 'ක්‍රියාත්මක' : 'අක්‍රිය'} කරන ලදී!`);
+                loadCredentials();
+            } catch (error) {
+                console.error('❌ Error toggling status:', error);
+                showError('තත්ත්වය වෙනස් කිරීමේ දෝෂයක් ඇතිවිය');
+            }
+        }
+
+        async function deleteCredential(id) {
+            if (!confirm('මෙම credential එක මකා දැමීමට අවශ්‍යද? මෙය ආපසු හැරවිය නොහැක!')) {
+                return;
+            }
+
+            try {
+                console.log('🗑️ Deleting credential ID:', id);
+
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/credentials_sipmini?id=eq.${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to delete credential');
+
+                console.log('✅ Credential deleted successfully');
+                showSuccess('✅ Credential සාර්ථකව මකා දමන ලදී!');
+                loadCredentials();
+            } catch (error) {
+                console.error('❌ Error deleting credential:', error);
+                showError('Credential මකා දැමීමේ දෝෂයක් ඇතිවිය');
+            }
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.classList.remove('hidden');
+            setTimeout(() => {
+                successDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+            setTimeout(() => {
+                errorDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Close modals when clicking outside
+        document.getElementById('addModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAddModal();
+            }
+        });
+
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditModal();
+            }
+        });
+    </script>
+</body>
+</html>
