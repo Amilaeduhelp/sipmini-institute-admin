@@ -164,6 +164,12 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .btn-primary { background: #667eea; }
         .btn-secondary { background: #6c757d; }
         .btn-danger { background: #dc3545; }
@@ -204,11 +210,19 @@
         .alert-success {
             background: #d4edda;
             color: #155724;
+            border: 1px solid #c3e6cb;
         }
 
         .alert-error {
             background: #f8d7da;
             color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
         }
 
         .modal-overlay {
@@ -285,6 +299,52 @@
             opacity: 0.9;
         }
 
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+
+        .loading-spinner.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .connection-status {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
         @media (max-width: 768px) {
             .header {
                 padding: 20px;
@@ -305,6 +365,10 @@
 
             .content-wrapper {
                 padding: 20px;
+            }
+
+            .modal-actions {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -328,49 +392,58 @@
             <h2 style="text-align: center; color: #667eea; margin-bottom: 10px;">✏️ සංස්කරණය කරන්න</h2>
             <p class="subtitle">Search, Edit and Delete Student Records</p>
 
+            <div id="connectionStatus"></div>
             <div id="alertBox" class="alert"></div>
 
-            <div class="stats">
-                <div class="stat-card">
-                    <div class="stat-number" id="totalRecords">0</div>
-                    <div class="stat-label">Total Records</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="displayedRecords">0</div>
-                    <div class="stat-label">Displayed Records</div>
-                </div>
+            <div class="loading-spinner" id="loadingSpinner">
+                <div class="spinner"></div>
+                <p>Loading data... දත්ත පූරණය වෙමින්...</p>
             </div>
 
-            <div class="search-box">
-                <h3 style="color: #667eea; margin-bottom: 15px;">🔍 සොයන්න - Search & Filter</h3>
-                
-                <div class="form-group">
-                    <label>Search by:</label>
-                    <input type="text" id="searchInput" placeholder="Student number, name, teacher, or subject">
+            <div id="mainContent" style="display: none;">
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalRecords">0</div>
+                        <div class="stat-label">Total Records</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="displayedRecords">0</div>
+                        <div class="stat-label">Displayed Records</div>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Filter by Teacher:</label>
-                    <select id="teacherFilter" onchange="filterByTeacher()">
-                        <option value="">-- All Teachers --</option>
-                    </select>
+                <div class="search-box">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">🔍 සොයන්න - Search & Filter</h3>
+                    
+                    <div class="form-group">
+                        <label>Search by:</label>
+                        <input type="text" id="searchInput" placeholder="Student number, name, teacher, or subject">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Filter by Teacher:</label>
+                        <select id="teacherFilter" onchange="filterByTeacher()">
+                            <option value="">-- All Teachers --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Filter by Subject:</label>
+                        <select id="subjectFilter" onchange="filterBySubject()">
+                            <option value="">-- All Subjects --</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-buttons">
+                        <button class="btn btn-primary" onclick="searchRecords()">🔍 Search</button>
+                        <button class="btn btn-secondary" onclick="showAllRecords()">📋 Show All</button>
+                        <button class="btn btn-danger" onclick="clearSearch()">🗑️ Clear All Filters</button>
+                        <button class="btn btn-warning" onclick="reloadData()">🔄 Reload Data</button>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Filter by Subject:</label>
-                    <select id="subjectFilter" onchange="filterBySubject()">
-                        <option value="">-- All Subjects --</option>
-                    </select>
-                </div>
-
-                <div class="filter-buttons">
-                    <button class="btn btn-primary" onclick="searchRecords()">🔍 Search</button>
-                    <button class="btn btn-secondary" onclick="showAllRecords()">📋 Show All</button>
-                    <button class="btn btn-danger" onclick="clearSearch()">🗑️ Clear All Filters</button>
-                </div>
+                <div id="editSearchResults"></div>
             </div>
-
-            <div id="editSearchResults"></div>
         </div>
     </div>
 
@@ -424,9 +497,29 @@
         const SUPABASE_URL = 'https://uqgzlaxsnknheoerbfus.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxZ3psYXhzbmtuaGVvZXJiZnVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjM2MTUsImV4cCI6MjA3OTI4MzYxNX0.IYWZ7ukx8J-GJMWy7cMk2BWnmzJmJjjE93yEmJie7nQ';
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
         let allRecords = [];
+        let supabaseClient;
+
+        // Initialize Supabase
+        function initSupabase() {
+            try {
+                console.log('🔄 Initializing Supabase...');
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                console.log('✅ Supabase client created successfully');
+                return true;
+            } catch (error) {
+                console.error('❌ Supabase initialization error:', error);
+                showConnectionStatus('Failed to initialize Supabase: ' + error.message, 'error');
+                return false;
+            }
+        }
+
+        function showConnectionStatus(message, type = 'success') {
+            const statusDiv = document.getElementById('connectionStatus');
+            statusDiv.className = `connection-status status-${type}`;
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+        }
 
         function showAlert(message, type = 'success') {
             const alertBox = document.getElementById('alertBox');
@@ -435,34 +528,103 @@
             setTimeout(() => alertBox.classList.remove('show'), 5000);
         }
 
-        async function loadAllRecords() {
+        function showLoading(show = true) {
+            document.getElementById('loadingSpinner').classList.toggle('show', show);
+            document.getElementById('mainContent').style.display = show ? 'none' : 'block';
+        }
+
+        async function testConnection() {
             try {
-                const { data: records, error } = await supabase
+                console.log('🔍 Testing database connection...');
+                const { data, error, count } = await supabaseClient
                     .from('sipminireport')
-                    .select('*')
+                    .select('*', { count: 'exact', head: true });
+
+                if (error) {
+                    console.error('❌ Connection test failed:', error);
+                    throw error;
+                }
+
+                console.log('✅ Connection successful!');
+                return true;
+            } catch (error) {
+                console.error('❌ Connection test error:', error);
+                return false;
+            }
+        }
+
+        async function loadAllRecords() {
+            showLoading(true);
+            
+            try {
+                console.log('📥 Fetching all records from sipminireport...');
+                
+                const { data: records, error, count } = await supabaseClient
+                    .from('sipminireport')
+                    .select('*', { count: 'exact' })
                     .order('studentno', { ascending: true });
 
-                if (error) throw error;
+                if (error) {
+                    console.error('❌ Database error:', error);
+                    throw error;
+                }
+
+                console.log('✅ Records fetched successfully:', records ? records.length : 0);
+                console.log('📊 First record sample:', records && records.length > 0 ? records[0] : 'No records');
 
                 allRecords = records || [];
                 document.getElementById('totalRecords').textContent = allRecords.length;
                 
+                if (allRecords.length === 0) {
+                    showConnectionStatus('⚠️ No records found in database. Please add some data first.', 'error');
+                    showAlert('Database is empty. Please add students first using Manage Students tab.', 'info');
+                } else {
+                    showConnectionStatus(`✅ Connected successfully! Found ${allRecords.length} records.`, 'success');
+                }
+                
                 // Populate teacher dropdown
-                const teachers = [...new Set(allRecords.map(r => r.teachername))].sort();
+                const teachers = [...new Set(allRecords.map(r => r.teachername).filter(t => t))].sort();
                 const teacherSelect = document.getElementById('teacherFilter');
                 teacherSelect.innerHTML = '<option value="">-- All Teachers --</option>' +
                     teachers.map(t => `<option value="${t}">${t}</option>`).join('');
                 
                 // Populate subject dropdown
-                const subjects = [...new Set(allRecords.map(r => r.subject))].sort();
+                const subjects = [...new Set(allRecords.map(r => r.subject).filter(s => s))].sort();
                 const subjectSelect = document.getElementById('subjectFilter');
                 subjectSelect.innerHTML = '<option value="">-- All Subjects --</option>' +
                     subjects.map(s => `<option value="${s}">${s}</option>`).join('');
                 
                 showAllRecords();
+                showLoading(false);
+                
             } catch (error) {
-                showAlert('Error loading records: ' + error.message, 'error');
+                console.error('❌ Fatal error loading records:', error);
+                showLoading(false);
+                showConnectionStatus('❌ Error: ' + error.message, 'error');
+                showAlert('Failed to load data: ' + error.message + '. Check console (F12) for details.', 'error');
+                
+                // Show detailed error info
+                document.getElementById('editSearchResults').innerHTML = `
+                    <div style="background: #f8d7da; padding: 20px; border-radius: 10px; border: 2px solid #dc3545;">
+                        <h3 style="color: #721c24; margin-bottom: 15px;">❌ Error Loading Data</h3>
+                        <p style="margin-bottom: 10px;"><strong>Error Message:</strong> ${error.message}</p>
+                        <p style="margin-bottom: 10px;"><strong>Possible causes:</strong></p>
+                        <ul style="margin-left: 20px; margin-bottom: 15px;">
+                            <li>Table 'sipminireport' does not exist in database</li>
+                            <li>API credentials are incorrect</li>
+                            <li>Network connection issue</li>
+                            <li>CORS policy blocking the request</li>
+                        </ul>
+                        <p><strong>Press F12 and check Console tab for detailed error information.</strong></p>
+                        <button class="btn btn-warning" onclick="reloadData()" style="margin-top: 15px;">🔄 Try Again</button>
+                    </div>
+                `;
             }
+        }
+
+        function reloadData() {
+            console.log('🔄 Reloading data...');
+            loadAllRecords();
         }
 
         async function searchRecords() {
@@ -473,17 +635,20 @@
                 return;
             }
 
+            console.log('🔍 Searching for:', searchTerm);
             const filtered = allRecords.filter(r => 
-                r.studentno.toLowerCase().includes(searchTerm) ||
-                r.studentname.toLowerCase().includes(searchTerm) ||
-                r.teachername.toLowerCase().includes(searchTerm) ||
-                r.subject.toLowerCase().includes(searchTerm)
+                (r.studentno && r.studentno.toLowerCase().includes(searchTerm)) ||
+                (r.studentname && r.studentname.toLowerCase().includes(searchTerm)) ||
+                (r.teachername && r.teachername.toLowerCase().includes(searchTerm)) ||
+                (r.subject && r.subject.toLowerCase().includes(searchTerm))
             );
 
+            console.log('📊 Search results:', filtered.length);
             displaySearchResults(filtered, `Search Results for "${searchTerm}"`);
         }
 
         function showAllRecords() {
+            console.log('📋 Showing all records:', allRecords.length);
             displaySearchResults(allRecords, 'All Records');
         }
 
@@ -495,6 +660,7 @@
                 return;
             }
 
+            console.log('👨‍🏫 Filtering by teacher:', teacher);
             const filtered = allRecords.filter(r => r.teachername === teacher);
             displaySearchResults(filtered, `Classes by ${teacher}`);
         }
@@ -507,11 +673,13 @@
                 return;
             }
 
+            console.log('📚 Filtering by subject:', subject);
             const filtered = allRecords.filter(r => r.subject === subject);
             displaySearchResults(filtered, `${subject} Classes`);
         }
 
         function clearSearch() {
+            console.log('🗑️ Clearing all filters');
             document.getElementById('searchInput').value = '';
             document.getElementById('teacherFilter').value = '';
             document.getElementById('subjectFilter').value = '';
@@ -522,8 +690,15 @@
             const resultsDiv = document.getElementById('editSearchResults');
             document.getElementById('displayedRecords').textContent = records.length;
             
+            console.log('📊 Displaying results:', records.length, 'records');
+            
             if (!records || records.length === 0) {
-                resultsDiv.innerHTML = '<p style="text-align: center; color: #999; padding: 30px;">No records found</p>';
+                resultsDiv.innerHTML = `
+                    <div style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 10px;">
+                        <h3 style="color: #999; margin-bottom: 10px;">📭 No records found</h3>
+                        <p style="color: #666;">Try different search terms or filters</p>
+                    </div>
+                `;
                 return;
             }
 
@@ -533,13 +708,13 @@
                     <div class="student-card">
                         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px; flex-wrap: wrap;">
                             <div>
-                                <h3 style="margin-bottom: 5px;">${r.studentname} (${r.studentno})</h3>
-                                <p><strong>Subject:</strong> ${r.subject} | <strong>Teacher:</strong> ${r.teachername}</p>
+                                <h3 style="margin-bottom: 5px;">${r.studentname || 'N/A'} (${r.studentno || 'N/A'})</h3>
+                                <p><strong>Subject:</strong> ${r.subject || 'N/A'} | <strong>Teacher:</strong> ${r.teachername || 'N/A'}</p>
                                 <p><strong>Phone:</strong> ${r.phoneno || 'N/A'} | <strong>Monthly Fee:</strong> Rs. ${r.monthly_fee || 0}</p>
                             </div>
                             <div style="display: flex; gap: 5px; margin-top: 10px;">
                                 <button class="btn btn-info" style="padding: 8px 15px; margin: 0;" onclick="editRecord(${r.id})">✏️ Edit</button>
-                                <button class="btn btn-danger" style="padding: 8px 15px; margin: 0;" onclick="deleteClass(${r.id}, '${r.studentname}', '${r.subject}')">🗑️ Delete</button>
+                                <button class="btn btn-danger" style="padding: 8px 15px; margin: 0;" onclick="deleteClass(${r.id}, '${(r.studentname || '').replace(/'/g, "\\'")}', '${(r.subject || '').replace(/'/g, "\\'")}')">🗑️ Delete</button>
                             </div>
                         </div>
                         <div style="font-size: 13px; color: #666; margin-top: 10px;">
@@ -552,6 +727,7 @@
         }
 
         function editRecord(id) {
+            console.log('✏️ Editing record ID:', id);
             const record = allRecords.find(r => r.id === id);
             if (!record) {
                 showAlert('Record not found', 'error');
@@ -559,10 +735,10 @@
             }
 
             document.getElementById('editRecordId').value = record.id;
-            document.getElementById('editStudentNo').value = record.studentno;
-            document.getElementById('editStudentName').value = record.studentname;
-            document.getElementById('editTeacherName').value = record.teachername;
-            document.getElementById('editSubject').value = record.subject;
+            document.getElementById('editStudentNo').value = record.studentno || '';
+            document.getElementById('editStudentName').value = record.studentname || '';
+            document.getElementById('editTeacherName').value = record.teachername || '';
+            document.getElementById('editSubject').value = record.subject || '';
             document.getElementById('editPhoneNo').value = record.phoneno || '';
             document.getElementById('editMonthlyFee').value = record.monthly_fee || 0;
 
@@ -590,18 +766,28 @@
                 return;
             }
 
+            if (!updatedData.studentname || !updatedData.teachername || !updatedData.subject) {
+                showAlert('Please fill all required fields', 'error');
+                return;
+            }
+
             try {
-                const { error } = await supabase
+                console.log('💾 Saving record ID:', id, updatedData);
+                
+                const { data, error } = await supabaseClient
                     .from('sipminireport')
                     .update(updatedData)
-                    .eq('id', id);
+                    .eq('id', id)
+                    .select();
 
                 if (error) throw error;
 
-                showAlert('✓ සාර්ථකව යාවත්කාලීන කරන ලදි! Record updated successfully!', 'success');
+                console.log('✅ Record updated successfully');
+                showAlert('✅ සාර්ථකව යාවත්කාලීන කරන ලදි! Record updated successfully!', 'success');
                 closeEditModal();
                 await loadAllRecords();
             } catch (error) {
+                console.error('❌ Update error:', error);
                 showAlert('Error updating record: ' + error.message, 'error');
             }
         }
@@ -610,15 +796,20 @@
             if (!confirm(`ඔබට මෙම පන්තිය මකා දැමීමට අවශ්‍යද?\n\nDelete ${subject} class for ${name}?`)) return;
 
             try {
-                const { error } = await supabase
+                console.log('🗑️ Deleting record ID:', id);
+                
+                const { error } = await supabaseClient
                     .from('sipminireport')
                     .delete()
                     .eq('id', id);
 
                 if (error) throw error;
-                showAlert(`✓ ${subject} පන්තිය මකා දමන ලදි! Class deleted successfully!`, 'success');
+                
+                console.log('✅ Record deleted successfully');
+                showAlert(`✅ ${subject} පන්තිය මකා දමන ලදි! Class deleted successfully!`, 'success');
                 await loadAllRecords();
             } catch (error) {
+                console.error('❌ Delete error:', error);
                 showAlert('Delete error: ' + error.message, 'error');
             }
         }
@@ -630,8 +821,31 @@
             }
         });
 
-        // Initial load
-        loadAllRecords();
+        // Close modal on outside click
+        document.getElementById('editRecordModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditModal();
+            }
+        });
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Page loaded, starting initialization...');
+            
+            if (!initSupabase()) {
+                showAlert('Failed to initialize Supabase. Please check console.', 'error');
+                return;
+            }
+
+            const connectionOk = await testConnection();
+            if (!connectionOk) {
+                showAlert('Cannot connect to database. Please check your connection.', 'error');
+                showLoading(false);
+                return;
+            }
+
+            await loadAllRecords();
+        });
     </script>
 </body>
 </html>
