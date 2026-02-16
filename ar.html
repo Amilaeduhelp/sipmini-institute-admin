@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="si">
 <head>
@@ -159,6 +158,12 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .btn-primary { background: #667eea; }
         .btn-secondary { background: #6c757d; }
         .btn-warning { background: #ffc107; color: #000; }
@@ -177,11 +182,19 @@
         .alert-success {
             background: #d4edda;
             color: #155724;
+            border: 1px solid #c3e6cb;
         }
 
         .alert-error {
             background: #f8d7da;
             color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
         }
 
         .report-cards {
@@ -299,6 +312,52 @@
             font-size: 18px;
         }
 
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+
+        .loading-spinner.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .connection-status {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
         @media (max-width: 768px) {
             .header {
                 padding: 20px;
@@ -346,49 +405,57 @@
             <h2 style="text-align: center; color: #667eea; margin-bottom: 10px;">💰 ගිණුම් වාර්තා</h2>
             <p class="subtitle">Financial Reports & Teacher Payments (Numeric Version)</p>
 
+            <div id="connectionStatus"></div>
             <div id="alertBox" class="alert"></div>
 
-            <div class="report-cards">
-                <div class="report-card institute-card" onclick="generateInstituteReport()">
-                    <h3>
-                        🏢 <span>Institute Summary</span>
-                    </h3>
-                    <p>Complete overview of all income from ireport column</p>
-                    <div class="features">
-                        ✓ Total Institute Income<br>
-                        ✓ Teacher-wise Breakdown<br>
-                        ✓ Student Count<br>
-                        ✓ Detailed Analysis
+            <div class="loading-spinner" id="loadingSpinner">
+                <div class="spinner"></div>
+                <p>Connecting to database... දත්ත පූරණය වෙමින්...</p>
+            </div>
+
+            <div id="mainContent" style="display: none;">
+                <div class="report-cards">
+                    <div class="report-card institute-card" onclick="generateInstituteReport()">
+                        <h3>
+                            🏢 <span>Institute Summary</span>
+                        </h3>
+                        <p>Complete overview of all income from ireport column</p>
+                        <div class="features">
+                            ✓ Total Institute Income<br>
+                            ✓ Teacher-wise Breakdown<br>
+                            ✓ Student Count<br>
+                            ✓ Detailed Analysis
+                        </div>
+                    </div>
+
+                    <div class="report-card teacher-card" onclick="showTeacherSelection()">
+                        <h3>
+                            👨‍🏫 <span>Individual Teacher Report</span>
+                        </h3>
+                        <p>Detailed payment report from treport column for a specific teacher</p>
+                        <div class="features">
+                            ✓ Teacher Payment Details<br>
+                            ✓ Number of Students<br>
+                            ✓ Total Amount from treport<br>
+                            ✓ Student-wise Breakdown
+                        </div>
                     </div>
                 </div>
 
-                <div class="report-card teacher-card" onclick="showTeacherSelection()">
-                    <h3>
-                        👨‍🏫 <span>Individual Teacher Report</span>
-                    </h3>
-                    <p>Detailed payment report from treport column for a specific teacher</p>
-                    <div class="features">
-                        ✓ Teacher Payment Details<br>
-                        ✓ Number of Students<br>
-                        ✓ Total Amount from treport<br>
-                        ✓ Student-wise Breakdown
+                <div id="teacherSelectionBox" class="selection-box">
+                    <h3 style="color: #667eea; margin-bottom: 15px;">👨‍🏫 Select Teacher for Individual Report</h3>
+                    <div class="form-group">
+                        <label>Teacher Name:</label>
+                        <select id="accountsTeacherSelect">
+                            <option value="">-- Select Teacher --</option>
+                        </select>
                     </div>
+                    <button class="btn btn-primary" onclick="generateTeacherReport()">📊 Generate Teacher Report</button>
+                    <button class="btn btn-secondary" onclick="hideTeacherSelection()">❌ Cancel</button>
                 </div>
-            </div>
 
-            <div id="teacherSelectionBox" class="selection-box">
-                <h3 style="color: #667eea; margin-bottom: 15px;">👨‍🏫 Select Teacher for Individual Report</h3>
-                <div class="form-group">
-                    <label>Teacher Name:</label>
-                    <select id="accountsTeacherSelect">
-                        <option value="">-- Select Teacher --</option>
-                    </select>
-                </div>
-                <button class="btn btn-primary" onclick="generateTeacherReport()">📊 Generate Teacher Report</button>
-                <button class="btn btn-secondary" onclick="hideTeacherSelection()">❌ Cancel</button>
+                <div id="accountsReport"></div>
             </div>
-
-            <div id="accountsReport"></div>
         </div>
     </div>
 
@@ -396,7 +463,28 @@
         const SUPABASE_URL = 'https://uqgzlaxsnknheoerbfus.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxZ3psYXhzbmtuaGVvZXJiZnVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjM2MTUsImV4cCI6MjA3OTI4MzYxNX0.IYWZ7ukx8J-GJMWy7cMk2BWnmzJmJjjE93yEmJie7nQ';
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let supabaseClient;
+
+        // Initialize Supabase
+        function initSupabase() {
+            try {
+                console.log('🔄 Initializing Supabase...');
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                console.log('✅ Supabase client created successfully');
+                return true;
+            } catch (error) {
+                console.error('❌ Supabase initialization error:', error);
+                showConnectionStatus('Failed to initialize Supabase: ' + error.message, 'error');
+                return false;
+            }
+        }
+
+        function showConnectionStatus(message, type = 'success') {
+            const statusDiv = document.getElementById('connectionStatus');
+            statusDiv.className = `connection-status status-${type}`;
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+        }
 
         function showAlert(message, type = 'success') {
             const alertBox = document.getElementById('alertBox');
@@ -405,17 +493,48 @@
             setTimeout(() => alertBox.classList.remove('show'), 5000);
         }
 
+        function showLoading(show = true) {
+            document.getElementById('loadingSpinner').classList.toggle('show', show);
+            document.getElementById('mainContent').style.display = show ? 'none' : 'block';
+        }
+
+        async function testConnection() {
+            try {
+                console.log('🔍 Testing database connection...');
+                const { data, error } = await supabaseClient
+                    .from('sipminireport')
+                    .select('*', { count: 'exact', head: true });
+
+                if (error) {
+                    console.error('❌ Connection test failed:', error);
+                    throw error;
+                }
+
+                console.log('✅ Connection successful!');
+                return true;
+            } catch (error) {
+                console.error('❌ Connection test error:', error);
+                return false;
+            }
+        }
+
         async function loadTeacherDropdown() {
             try {
-                const { data: students } = await supabase
+                console.log('📥 Loading teachers list...');
+                const { data: students, error } = await supabaseClient
                     .from('sipminireport')
                     .select('teachername');
+
+                if (error) throw error;
 
                 const teachers = [...new Set(students.map(s => s.teachername))].filter(t => t).sort();
                 const select = document.getElementById('accountsTeacherSelect');
                 select.innerHTML = '<option value="">-- Select Teacher --</option>' +
                     teachers.map(t => `<option value="${t}">${t}</option>`).join('');
+                
+                console.log('✅ Teachers loaded:', teachers.length);
             } catch (error) {
+                console.error('❌ Error loading teachers:', error);
                 showAlert('Error loading teachers: ' + error.message, 'error');
             }
         }
@@ -431,15 +550,18 @@
         }
 
         async function generateInstituteReport() {
+            console.log('📊 Generating institute report...');
             hideTeacherSelection();
             document.getElementById('accountsReport').innerHTML = '<div class="loading">⏳ Loading data...</div>';
 
             try {
-                const { data: students, error } = await supabase
+                const { data: students, error } = await supabaseClient
                     .from('sipminireport')
                     .select('*');
 
                 if (error) throw error;
+
+                console.log('✅ Data loaded:', students.length, 'students');
 
                 let totalInstituteIncome = 0;
                 let totalStudents = 0;
@@ -545,9 +667,17 @@
                 `;
 
                 document.getElementById('accountsReport').innerHTML = reportHTML;
+                console.log('✅ Report generated successfully');
             } catch (error) {
+                console.error('❌ Error generating report:', error);
                 showAlert('Error generating report: ' + error.message, 'error');
-                document.getElementById('accountsReport').innerHTML = '';
+                document.getElementById('accountsReport').innerHTML = `
+                    <div style="background: #f8d7da; padding: 20px; border-radius: 10px;">
+                        <h3 style="color: #721c24;">❌ Error Loading Data</h3>
+                        <p>${error.message}</p>
+                        <p style="margin-top: 10px;">Press F12 and check Console for details.</p>
+                    </div>
+                `;
             }
         }
 
@@ -559,15 +689,18 @@
                 return;
             }
 
+            console.log('📊 Generating teacher report for:', selectedTeacher);
             document.getElementById('accountsReport').innerHTML = '<div class="loading">⏳ Loading data...</div>';
 
             try {
-                const { data: students, error } = await supabase
+                const { data: students, error } = await supabaseClient
                     .from('sipminireport')
                     .select('*')
                     .eq('teachername', selectedTeacher);
 
                 if (error) throw error;
+
+                console.log('✅ Data loaded:', students.length, 'students for', selectedTeacher);
 
                 let totalPayment = 0;
                 let studentsWithPayment = 0;
@@ -653,15 +786,25 @@
 
                 document.getElementById('accountsReport').innerHTML = reportHTML;
                 hideTeacherSelection();
+                console.log('✅ Teacher report generated successfully');
             } catch (error) {
+                console.error('❌ Error generating teacher report:', error);
                 showAlert('Error generating report: ' + error.message, 'error');
-                document.getElementById('accountsReport').innerHTML = '';
+                document.getElementById('accountsReport').innerHTML = `
+                    <div style="background: #f8d7da; padding: 20px; border-radius: 10px;">
+                        <h3 style="color: #721c24;">❌ Error Loading Data</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
             }
         }
 
         function copyToWhatsApp(elementId) {
             const element = document.getElementById(elementId);
-            if (!element) return;
+            if (!element) {
+                showAlert('Report not found', 'error');
+                return;
+            }
 
             const tables = element.querySelectorAll('table');
             let text = element.querySelector('.report-header').innerText + '\n\n';
@@ -686,7 +829,8 @@
 
             navigator.clipboard.writeText(text).then(() => {
                 showAlert('✓ Copied to clipboard! Ready to paste in WhatsApp', 'success');
-            }).catch(() => {
+            }).catch((err) => {
+                console.error('Copy error:', err);
                 showAlert('Failed to copy. Please try again.', 'error');
             });
         }
@@ -724,8 +868,28 @@
             });
         }
 
-        // Initialize
-        loadTeacherDropdown();
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Page loaded, starting initialization...');
+            
+            if (!initSupabase()) {
+                showAlert('Failed to initialize Supabase. Please check console.', 'error');
+                showLoading(false);
+                return;
+            }
+
+            const connectionOk = await testConnection();
+            if (!connectionOk) {
+                showConnectionStatus('❌ Cannot connect to database. Please check your connection.', 'error');
+                showAlert('Cannot connect to database. Please check your connection.', 'error');
+                showLoading(false);
+                return;
+            }
+
+            showConnectionStatus('✅ Connected successfully!', 'success');
+            await loadTeacherDropdown();
+            showLoading(false);
+        });
     </script>
 </body>
 </html>
