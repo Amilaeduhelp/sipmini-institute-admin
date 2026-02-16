@@ -271,6 +271,14 @@
             background: #27ae60;
         }
 
+        .settings-btn {
+            background: #e67e22;
+        }
+
+        .settings-btn:hover {
+            background: #d35400;
+        }
+
         @media (max-width: 768px) {
             .login-container {
                 padding: 30px 20px;
@@ -364,6 +372,7 @@
             <button class="tab" onclick="openTab(event, 'editRecords')">Edit Records</button>
             <button class="tab" onclick="openTab(event, 'accountReports')">Account Reports</button>
             <button class="tab" onclick="openTab(event, 'studentReports')">Student Reports</button>
+            <button class="tab" onclick="openTab(event, 'settings')">සැකසුම්</button>
             <button class="tab" onclick="openTab(event, 'managementSystem')">Management System</button>
         </div>
 
@@ -394,14 +403,6 @@
                     <a href="ar.html" class="action-btn">ගිණුම් වාර්තා බලන්න →</a>
                 </div>
             </div>
-             <!-- pw Tab -->
-            <div id="pw management" class="tab-content">
-                <div class="content-card">
-                    <h2>✏️ සැකසුම්</h2>
-                    <p>පිවිසුම් සැකසීම ආ අවලංගු කිරීම.</p>
-                    <a href="admin2.html" class="action-btn">සකසන්න →</a>
-                </div>
-            </div>
 
             <!-- Student Reports Tab -->
             <div id="studentReports" class="tab-content">
@@ -409,6 +410,18 @@
                     <h2>📊 සිසු වාර්තා</h2>
                     <p>සිසුන්ගේ ශාස්ත්‍රීය ප්‍රගතිය, පැමිණීම සහ වෙනත් කාර්ය සාධන වාර්තා බලන්න. විස්තරාත්මක සිසු වාර්තා ජනනය කර බාගත කරන්න.</p>
                     <a href="sr.html" class="action-btn">සිසු වාර්තා බලන්න →</a>
+                </div>
+            </div>
+
+            <!-- Settings Tab (NEW!) -->
+            <div id="settings" class="tab-content">
+                <div class="content-card">
+                    <h2>⚙️ සැකසුම්</h2>
+                    <p>පද්ධතියේ පිවිසුම් credentials කළමනාකරණය කරන්න. නව ගුරුවරුන් සඳහා access codes එකතු කිරීම, මුරපද වෙනස් කිරීම සහ පිවිසුම් අවලංගු කිරීම සඳහා මෙම පිටුව භාවිතා කරන්න.</p>
+                    <p style="background: #fff3cd; padding: 12px; border-radius: 8px; border-left: 4px solid #ffc107; margin-top: 15px;">
+                        <strong>⚠️ වැදගත්:</strong> මෙම පිටුවේ සිදු කරන වෙනස්කම් පද්ධතියේ සියලු පිවිසුම්වලට බලපායි. ප්‍රවේශමෙන් භාවිතා කරන්න.
+                    </p>
+                    <a href="admin-panel-fixed.html" class="action-btn settings-btn">සැකසුම් කළමනාකරණය කරන්න →</a>
                 </div>
             </div>
 
@@ -423,7 +436,7 @@
         </div>
     </div>
 
-     <script>
+    <script>
         // Supabase configuration
         const SUPABASE_URL = 'https://uqgzlaxsnknheoerbfus.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxZ3psYXhzbmtuaGVvZXJiZnVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjM2MTUsImV4cCI6MjA3OTI4MzYxNX0.IYWZ7ukx8J-GJMWy7cMk2BWnmzJmJjjE93yEmJie7nQ';
@@ -439,9 +452,11 @@
 
         // Check if user is already logged in on page load
         window.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Page loaded, checking login status...');
             const isLoggedIn = sessionStorage.getItem('sipminLoggedIn');
             const adminName = sessionStorage.getItem('sipminAdminName');
             if (isLoggedIn === 'true' && adminName) {
+                console.log('✅ User already logged in:', adminName);
                 document.getElementById('loginContainer').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
                 
@@ -460,6 +475,8 @@
             const errorMessage = document.getElementById('errorMessage');
             const loginBtn = document.querySelector('.login-btn');
             
+            console.log('🔐 Login attempt for:', username);
+            
             // Disable button and show loading
             loginBtn.disabled = true;
             loginBtn.textContent = 'පරීක්ෂා කරමින්...';
@@ -475,12 +492,14 @@
                 });
 
                 const data = await response.json();
+                console.log('📊 Database response:', data.length > 0 ? 'User found' : 'User not found');
 
                 if (data && data.length > 0) {
                     const credential = data[0];
 
                     // Check if account is active
                     if (!credential.is_active) {
+                        console.log('❌ Account is inactive');
                         errorMessage.textContent = 'මෙම ගිණුම අක්‍රිය කර ඇත. කරුණාකර පරිපාලකයා සම්බන්ධ කර ගන්න.';
                         errorMessage.style.display = 'block';
                         return;
@@ -490,6 +509,8 @@
                     const inputHash = await hashPassword(password);
                     
                     if (credential.password_hash === inputHash) {
+                        console.log('✅ Login successful');
+                        
                         // Update last_login timestamp
                         try {
                             await fetch(`${SUPABASE_URL}/rest/v1/credentials_sipmini?id=eq.${credential.id}`, {
@@ -504,12 +525,14 @@
                                     last_login: new Date().toISOString()
                                 })
                             });
+                            console.log('📝 Last login updated');
                         } catch (e) {
-                            console.log('Last login update skipped');
+                            console.log('⚠️ Last login update skipped');
                         }
 
                         // Get teacher name from database or fallback to access code
                         const adminName = credential.teachername || username;
+                        console.log('👤 Admin name:', adminName);
 
                         // Save login state
                         sessionStorage.setItem('sipminLoggedIn', 'true');
@@ -525,16 +548,18 @@
                         const panelHeader = document.querySelector('.panel-header h1');
                         panelHeader.textContent = `🎓 SIPMINI Admin Panel - ${adminName}`;
                     } else {
+                        console.log('❌ Wrong password');
                         errorMessage.textContent = 'වැරදි මුරපදයකි!';
                         errorMessage.style.display = 'block';
                         document.getElementById('password').value = '';
                     }
                 } else {
+                    console.log('❌ User not found');
                     errorMessage.textContent = 'වැරදි ප්‍රවේශ කේතයකි!';
                     errorMessage.style.display = 'block';
                 }
             } catch (error) {
-                console.error('Login error:', error);
+                console.error('❌ Login error:', error);
                 errorMessage.textContent = 'පිවිසීමේ දෝෂයක් ඇතිවිය. නැවත උත්සාහ කරන්න.';
                 errorMessage.style.display = 'block';
             } finally {
@@ -545,6 +570,8 @@
 
         // Tab switching
         function openTab(evt, tabName) {
+            console.log('📑 Switching to tab:', tabName);
+            
             const tabContents = document.getElementsByClassName('tab-content');
             for (let i = 0; i < tabContents.length; i++) {
                 tabContents[i].classList.remove('active');
@@ -561,6 +588,8 @@
 
         // Logout function
         function logout() {
+            console.log('👋 Logging out...');
+            
             // Clear login state
             sessionStorage.removeItem('sipminLoggedIn');
             sessionStorage.removeItem('sipminAdminName');
@@ -575,6 +604,8 @@
             // Reset header text
             const panelHeader = document.querySelector('.panel-header h1');
             panelHeader.textContent = '🎓 SIPMINI Admin Panel';
+            
+            console.log('✅ Logged out successfully');
         }
     </script>
 </body>
