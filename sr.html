@@ -195,6 +195,12 @@
             transform: translateY(0);
         }
 
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .btn-primary { 
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
@@ -257,6 +263,58 @@
             background: #f8d7da;
             color: #721c24;
             border-left: 4px solid #dc3545;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+
+        .loading-spinner.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .connection-status {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
 
         .report-container {
@@ -575,7 +633,9 @@
             .header,
             .tabs-container,
             .search-section,
-            .report-actions {
+            .report-actions,
+            .connection-status,
+            .alert {
                 display: none;
             }
         }
@@ -602,34 +662,42 @@
                 <p>View Student Reports - ශිෂ්‍ය වාර්තා බලන්න</p>
             </div>
 
+            <div id="connectionStatus"></div>
             <div id="alertBox" class="alert"></div>
 
-            <div class="search-section">
-                <h3 class="search-title">
-                    <span>🔍</span>
-                    <span>ශිෂ්‍යයෙකු සොයන්න - Search Student</span>
-                </h3>
-
-                <div class="form-group">
-                    <label>ශිෂ්‍ය අංකය හෝ නම ටයිප් කරන්න:</label>
-                    <input type="text" id="studentSearchInput" placeholder="උදා: s0001 හෝ ශිෂ්‍ය නම...">
-                    <div class="helper-text">Type student number (s0001) or student name to search</div>
-                </div>
-
-                <div class="form-group">
-                    <label>හෝ ලැයිස්තුවෙන් තෝරන්න:</label>
-                    <select id="studentSelect">
-                        <option value="">-- ශිෂ්‍යයෙකු තෝරන්න / Select Student --</option>
-                    </select>
-                </div>
-
-                <button class="btn btn-primary" onclick="generateReport()">
-                    <span>📊</span>
-                    <span>වාර්තාව ජනනය කරන්න / Generate Report</span>
-                </button>
+            <div class="loading-spinner" id="loadingSpinner">
+                <div class="spinner"></div>
+                <p>Loading students... ශිෂ්‍යයන් පූරණය වෙමින්...</p>
             </div>
 
-            <div id="reportContainer" class="report-container"></div>
+            <div id="mainContent" style="display: none;">
+                <div class="search-section">
+                    <h3 class="search-title">
+                        <span>🔍</span>
+                        <span>ශිෂ්‍යයෙකු සොයන්න - Search Student</span>
+                    </h3>
+
+                    <div class="form-group">
+                        <label>ශිෂ්‍ය අංකය හෝ නම ටයිප් කරන්න:</label>
+                        <input type="text" id="studentSearchInput" placeholder="උදා: s0001 හෝ ශිෂ්‍ය නම...">
+                        <div class="helper-text">Type student number (s0001) or student name to search</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>හෝ ලැයිස්තුවෙන් තෝරන්න:</label>
+                        <select id="studentSelect">
+                            <option value="">-- ශිෂ්‍යයෙකු තෝරන්න / Select Student --</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="generateReport()">
+                        <span>📊</span>
+                        <span>වාර්තාව ජනනය කරන්න / Generate Report</span>
+                    </button>
+                </div>
+
+                <div id="reportContainer" class="report-container"></div>
+            </div>
         </div>
     </div>
 
@@ -637,13 +705,59 @@
         const SUPABASE_URL = 'https://uqgzlaxsnknheoerbfus.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxZ3psYXhzbmtuaGVvZXJiZnVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5MjM2MTUsImV4cCI6MjA3OTI4MzYxNX0.IYWZ7ukx8J-GJMWy7cMk2BWnmzJmJjjE93yEmJie7nQ';
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let supabaseClient;
+
+        // Initialize Supabase
+        function initSupabase() {
+            try {
+                console.log('🔄 Initializing Supabase...');
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                console.log('✅ Supabase client created successfully');
+                return true;
+            } catch (error) {
+                console.error('❌ Supabase initialization error:', error);
+                showConnectionStatus('Failed to initialize Supabase: ' + error.message, 'error');
+                return false;
+            }
+        }
+
+        function showConnectionStatus(message, type = 'success') {
+            const statusDiv = document.getElementById('connectionStatus');
+            statusDiv.className = `connection-status status-${type}`;
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+        }
 
         function showAlert(message, type = 'success') {
             const alertBox = document.getElementById('alertBox');
             alertBox.className = `alert alert-${type} show`;
             alertBox.textContent = message;
             setTimeout(() => alertBox.classList.remove('show'), 5000);
+        }
+
+        function showLoading(show = true) {
+            document.getElementById('loadingSpinner').classList.toggle('show', show);
+            document.getElementById('mainContent').style.display = show ? 'none' : 'block';
+        }
+
+        async function testConnection() {
+            try {
+                console.log('🔍 Testing database connection...');
+                const { data, error } = await supabaseClient
+                    .from('sipminireport')
+                    .select('*', { count: 'exact', head: true });
+
+                if (error) {
+                    console.error('❌ Connection test failed:', error);
+                    throw error;
+                }
+
+                console.log('✅ Connection successful!');
+                return true;
+            } catch (error) {
+                console.error('❌ Connection test error:', error);
+                return false;
+            }
         }
 
         function getLastTwoMonths() {
@@ -672,13 +786,18 @@
         }
 
         async function loadStudents() {
+            showLoading(true);
+            
             try {
-                const { data: students, error } = await supabase
+                console.log('📥 Loading students list...');
+                const { data: students, error } = await supabaseClient
                     .from('sipminireport')
                     .select('studentno, studentname')
                     .order('studentname');
 
                 if (error) throw error;
+
+                console.log('✅ Students loaded:', students.length);
 
                 const uniqueStudents = {};
                 students.forEach(s => {
@@ -696,8 +815,13 @@
                         ).join('');
 
                 setupSearchFunctionality(uniqueStudents);
+                showConnectionStatus('✅ Connected successfully!', 'success');
+                showLoading(false);
             } catch (error) {
+                console.error('❌ Error loading students:', error);
+                showConnectionStatus('❌ Error loading data: ' + error.message, 'error');
                 showAlert('Error loading students: ' + error.message, 'error');
+                showLoading(false);
             }
         }
 
@@ -753,8 +877,12 @@
                 return;
             }
 
+            console.log('📊 Generating report for student:', studentNo);
+            document.getElementById('reportContainer').innerHTML = '<div class="loading-spinner show"><div class="spinner"></div><p>Generating report...</p></div>';
+            document.getElementById('reportContainer').style.display = 'block';
+
             try {
-                const { data: classes, error } = await supabase
+                const { data: classes, error } = await supabaseClient
                     .from('sipminireport')
                     .select('*')
                     .eq('studentno', studentNo);
@@ -763,12 +891,18 @@
 
                 if (!classes || classes.length === 0) {
                     showAlert('දත්ත හමු නොවිණි / No data found', 'error');
+                    document.getElementById('reportContainer').innerHTML = '';
+                    document.getElementById('reportContainer').style.display = 'none';
                     return;
                 }
 
+                console.log('✅ Report data loaded:', classes.length, 'classes');
                 displayReport(classes);
             } catch (error) {
+                console.error('❌ Error generating report:', error);
                 showAlert('Error: ' + error.message, 'error');
+                document.getElementById('reportContainer').innerHTML = '';
+                document.getElementById('reportContainer').style.display = 'none';
             }
         }
 
@@ -928,10 +1062,12 @@
             reportContainer.innerHTML = reportHTML;
             reportContainer.classList.add('show');
             
+            console.log('✅ Report displayed successfully');
             showAlert('වාර්තාව සාර්ථකව ජනනය විය! / Report generated successfully!', 'success');
         }
 
         function downloadPDF() {
+            console.log('📄 Generating PDF...');
             const element = document.getElementById('reportContainer');
             const opt = {
                 margin: 10,
@@ -940,14 +1076,21 @@
                 html2canvas: { scale: 2 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-            html2pdf().set(opt).from(element).save();
+            html2pdf().set(opt).from(element).save().then(() => {
+                showAlert('PDF downloaded successfully!', 'success');
+            }).catch((error) => {
+                console.error('PDF error:', error);
+                showAlert('Error generating PDF', 'error');
+            });
         }
 
         function printReport() {
+            console.log('🖨️ Printing report...');
             window.print();
         }
 
         function shareWhatsApp() {
+            console.log('📱 Sharing to WhatsApp...');
             const student = document.querySelector('.report-header h3').textContent;
             const studentNo = document.querySelector('.report-header p').textContent.split('|')[0].replace('අංකය:', '').trim();
             
@@ -968,7 +1111,26 @@
             window.open(url, '_blank');
         }
 
-        window.addEventListener('DOMContentLoaded', loadStudents);
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Page loaded, starting initialization...');
+            
+            if (!initSupabase()) {
+                showAlert('Failed to initialize Supabase. Please check console.', 'error');
+                showLoading(false);
+                return;
+            }
+
+            const connectionOk = await testConnection();
+            if (!connectionOk) {
+                showConnectionStatus('❌ Cannot connect to database. Please check your connection.', 'error');
+                showAlert('Cannot connect to database. Please check your connection.', 'error');
+                showLoading(false);
+                return;
+            }
+
+            await loadStudents();
+        });
     </script>
 </body>
 </html>
