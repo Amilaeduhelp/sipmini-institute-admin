@@ -372,7 +372,7 @@
             <button class="tab" onclick="openTab(event, 'editRecords')">Edit Records</button>
             <button class="tab" onclick="openTab(event, 'accountReports')">Account Reports</button>
             <button class="tab" onclick="openTab(event, 'studentReports')">Student Reports</button>
-            <button class="tab" onclick="openTab(event, 'settings')">Access settings</button>
+            <button class="tab" onclick="openTab(event, 'settings')">සැකසුම්</button>
             <button class="tab" onclick="openTab(event, 'managementSystem')">Management System</button>
         </div>
 
@@ -416,12 +416,12 @@
             <!-- Settings Tab (NEW!) -->
             <div id="settings" class="tab-content">
                 <div class="content-card">
-                    <h2>⚙️ Access settings</h2>
+                    <h2>⚙️ සැකසුම්</h2>
                     <p>පද්ධතියේ පිවිසුම් credentials කළමනාකරණය කරන්න. නව ගුරුවරුන් සඳහා access codes එකතු කිරීම, මුරපද වෙනස් කිරීම සහ පිවිසුම් අවලංගු කිරීම සඳහා මෙම පිටුව භාවිතා කරන්න.</p>
                     <p style="background: #fff3cd; padding: 12px; border-radius: 8px; border-left: 4px solid #ffc107; margin-top: 15px;">
                         <strong>⚠️ වැදගත්:</strong> මෙම පිටුවේ සිදු කරන වෙනස්කම් පද්ධතියේ සියලු පිවිසුම්වලට බලපායි. ප්‍රවේශමෙන් භාවිතා කරන්න.
                     </p>
-                    <a href="admin2.html" class="action-btn settings-btn">සැකසුම් කළමනාකරණය කරන්න →</a>
+                    <a href="admin-panel-fixed.html" class="action-btn settings-btn">සැකසුම් කළමනාකරණය කරන්න →</a>
                 </div>
             </div>
 
@@ -502,6 +502,15 @@
                         console.log('❌ Account is inactive');
                         errorMessage.textContent = 'මෙම ගිණුම අක්‍රිය කර ඇත. කරුණාකර පරිපාලකයා සම්බන්ධ කර ගන්න.';
                         errorMessage.style.display = 'block';
+                        return;
+                    }
+
+                    // Check if password starts with 'sss'
+                    if (!password.startsWith('sss')) {
+                        console.log('❌ Password does not start with sss');
+                        errorMessage.textContent = 'වැරදි මුරපදයකි! (මුරපදය "sss" න් ආරම්භ විය යුතුයි)';
+                        errorMessage.style.display = 'block';
+                        document.getElementById('password').value = '';
                         return;
                     }
 
