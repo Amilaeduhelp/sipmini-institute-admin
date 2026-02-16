@@ -265,6 +265,7 @@
         .btn-secondary { background: #6c757d; }
         .btn-danger { background: #dc3545; }
         .btn-info { background: #17a2b8; }
+        .btn-warning { background: #ffc107; color: #000; }
 
         .alert {
             padding: 15px 20px;
@@ -497,7 +498,17 @@
             overflow-y: auto;
         }
 
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
         @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
             .header {
                 padding: 20px;
             }
@@ -600,7 +611,6 @@
                         <input type="text" id="studentno" placeholder="s0001" required readonly>
                         <div class="helper-text">
                             ස්වයංක්‍රීයව ජනනය වේ. එකම අංකය බහු පන්ති සඳහා භාවිතා කරයි
-                            <br>Auto-generated. Same number for multiple classes
                         </div>
                     </div>
 
@@ -612,7 +622,7 @@
                     <div class="form-group">
                         <label>ගුරුවරයාගේ නම - Teacher Name *</label>
                         <select id="teachername" required>
-                            <option value="">-- ගුරුවරයෙකු තෝරන්න - Select Teacher --</option>
+                            <option value="">-- ගුරුවරයෙකු තෝරන්න --</option>
                             <option value="මහාචාර්ය චරිත් ජයතිලක">මහාචාර්ය චරිත් ජයතිලක</option>
                             <option value="ධම්මික ගීකියනගේ">ධම්මික ගීකියනගේ</option>
                             <option value="දිනේෂ් හල්ඕවිට">දිනේෂ් හල්ඕවිට</option>
@@ -630,7 +640,7 @@
                     <div class="form-group">
                         <label>විෂයය - Subject *</label>
                         <select id="subject" required>
-                            <option value="">-- විෂයය තෝරන්න - Select Subject --</option>
+                            <option value="">-- විෂයය තෝරන්න --</option>
                             <option value="Physics">Physics - භෞතික විද්‍යාව</option>
                             <option value="Combined Maths">Combined Maths - ඒකාබද්ධ ගණිතය</option>
                             <option value="Chemistry">Chemistry - රසායන විද්‍යාව</option>
@@ -647,28 +657,38 @@
                     <div class="form-group">
                         <label>දුරකථන අංකය - Phone Number</label>
                         <input type="text" id="phoneno" placeholder="0771234567">
-                        <div class="helper-text">Optional - විකල්පයකි</div>
                     </div>
 
-                    <div class="form-group">
-                        <label>මාසික ගාස්තුව - Monthly Fee (Rs.) *</label>
-                        <input type="number" id="monthly_fee" placeholder="0 = නොමිලේ / FREE" required min="0" step="0.01">
-                        <div class="helper-text">
-                            0 ඇතුළත් කළහොත් නොමිලේ පන්තියක් ලෙස සලකයි
-                            <br>Enter 0 for FREE class
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>මාසික ගාස්තුව - Monthly Fee (Rs.) *</label>
+                            <input type="number" id="monthly_fee" placeholder="0 = නොමිලේ" required min="0" step="0.01">
+                            <div class="helper-text">0 = නොමිලේ පන්තියක්</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>ප්‍රවේශ ගාස්තු - Admission Fee (Rs.)</label>
+                            <input type="number" id="admission_fee" placeholder="0" min="0" step="0.01" value="0">
+                            <div class="helper-text">ආයතනයට අයත් වේ</div>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn" id="submitBtn">➕ පන්තිය එකතු කරන්න - Add Class</button>
-                    <button type="button" class="btn btn-secondary" id="refreshBtn">🔄 නැවුම් කරන්න - Refresh</button>
+                    <div class="form-group">
+                        <label>හිඟ මුදල් - Outstanding Balance (Rs.)</label>
+                        <input type="number" id="outstanding_balance" placeholder="0" min="0" step="0.01" value="0">
+                        <div class="helper-text">පවතින හිඟ මුදලට එකතු වේ</div>
+                    </div>
+
+                    <button type="submit" class="btn" id="submitBtn">➕ පන්තිය එකතු කරන්න</button>
+                    <button type="button" class="btn btn-secondary" id="refreshBtn">🔄 නැවුම් කරන්න</button>
                 </form>
             </div>
 
             <!-- Students List -->
             <div class="students-section">
-                <h3>📋 වත්මන් ශිෂ්‍යයින් සහ පන්ති - Current Students & Classes</h3>
+                <h3>📋 වත්මන් ශිෂ්‍යයින් සහ පන්ති</h3>
                 <div id="studentsList">
-                    <div class="loading">📥 දත්ත පූරණය වෙමින්... Loading data...</div>
+                    <div class="loading">📥 දත්ත පූරණය වෙමින්...</div>
                 </div>
             </div>
         </div>
@@ -679,43 +699,79 @@
         <div class="modal">
             <div class="modal-header">
                 <h2>⚠️ ශිෂ්‍ය අංකය දැනටමත් තිබේ</h2>
-                <p style="color: #666; font-size: 14px;">Student Number Already Exists</p>
             </div>
             <div class="modal-content">
                 <div class="info-box">
                     <div class="info-row">
-                        <strong>අංකය - Number:</strong>
+                        <strong>අංකය:</strong>
                         <span id="existingStudentNo"></span>
                     </div>
                     <div class="info-row">
-                        <strong>නම - Name:</strong>
+                        <strong>නම:</strong>
                         <span id="existingStudentName"></span>
                     </div>
                     <div class="info-row">
-                        <strong>දුරකථන - Phone:</strong>
+                        <strong>දුරකථන:</strong>
                         <span id="existingStudentPhone"></span>
                     </div>
                 </div>
                 
                 <p style="margin-bottom: 15px; text-align: center; color: #666; font-weight: 600;">
-                    මෙම ශිෂ්‍යයා සඳහා නව පන්තියක් එකතු කරන්නද?<br>
-                    <small>Add new class for this student?</small>
+                    මෙම ශිෂ්‍යයා සඳහා නව පන්තියක් එකතු කරන්නද?
                 </p>
                 
                 <div class="existing-classes">
-                    <strong style="color: #667eea;">වත්මන් පන්ති - Current Classes:</strong>
+                    <strong style="color: #667eea;">වත්මන් පන්ති:</strong>
                     <div id="existingClassesList"></div>
                 </div>
             </div>
             <div class="modal-actions">
-                <button class="btn btn-primary" onclick="addNewClass()">
-                    ✓ නව පන්තිය එකතු කරන්න<br>
-                    <small style="font-size: 12px; font-weight: normal;">Add New Class</small>
-                </button>
-                <button class="btn btn-secondary" onclick="closeExistingStudentModal()">
-                    ✗ අවලංගු කරන්න<br>
-                    <small style="font-size: 12px; font-weight: normal;">Cancel</small>
-                </button>
+                <button class="btn btn-primary" onclick="addNewClass()">✓ නව පන්තිය එකතු කරන්න</button>
+                <button class="btn btn-secondary" onclick="closeExistingStudentModal()">✗ අවලංගු කරන්න</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>💰 ගෙවීමක් සටහන් කරන්න</h2>
+            </div>
+            <div class="modal-content">
+                <div class="info-box">
+                    <div class="info-row">
+                        <strong>ශිෂ්‍යයා:</strong>
+                        <span id="paymentStudentName"></span>
+                    </div>
+                    <div class="info-row">
+                        <strong>විෂයය:</strong>
+                        <span id="paymentSubject"></span>
+                    </div>
+                    <div class="info-row">
+                        <strong>මාසික ගාස්තුව:</strong>
+                        <span id="paymentMonthlyFee"></span>
+                    </div>
+                    <div class="info-row">
+                        <strong>හිඟ මුදල:</strong>
+                        <span id="paymentOutstanding" style="color: #dc3545; font-weight: bold;"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>ගෙවීමේ මුදල - Payment Amount (Rs.) *</label>
+                    <input type="number" id="paymentAmount" placeholder="0.00" min="0" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label>නොපැමිණීම් නිසා කපාහැරෙන මුදල - Deduction for Absence (Rs.)</label>
+                    <input type="number" id="absenceDeduction" placeholder="0.00" min="0" step="0.01" value="0">
+                    <div class="helper-text">හිඟ මුදලින් අඩු වේ</div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="recordPayment()">💾 සුරකින්න</button>
+                <button class="btn btn-secondary" onclick="closePaymentModal()">❌ අවලංගු</button>
             </div>
         </div>
     </div>
@@ -728,59 +784,53 @@
         let supabaseClient;
         let pendingClassData = null;
         let existingStudentData = null;
-
-        // Update connection status
-        function updateConnectionStatus(connected, message = '') {
-            const statusDiv = document.getElementById('connectionStatus');
-            if (connected) {
-                statusDiv.className = 'connection-status status-connected';
-                statusDiv.textContent = '🟢 සම්බන්ධිතයි' + (message ? ' - ' + message : '');
-            } else {
-                statusDiv.className = 'connection-status status-error';
-                statusDiv.textContent = '🔴 අසම්බන්ධිතයි' + (message ? ' - ' + message : '');
-            }
-        }
+        let currentPaymentClass = null;
 
         // Initialize Supabase
         async function initSupabase() {
             try {
-                console.log('Initializing Supabase...');
+                console.log('🔄 Initializing Supabase...');
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 
-                // Test connection
                 const { error } = await supabaseClient
                     .from('sipminireport')
                     .select('count', { count: 'exact', head: true });
                 
                 if (error) {
-                    console.error('Connection test error:', error);
+                    console.error('❌ Connection error:', error);
                     updateConnectionStatus(false, error.message);
-                    showAlert('Database සම්බන්ධතා ගැටළුවක්! RLS policies පරීක්ෂා කරන්න.', 'error');
+                    showAlert('Database connection error!', 'error');
                     return false;
                 }
                 
-                console.log('✓ Supabase connected successfully');
+                console.log('✅ Supabase connected');
                 updateConnectionStatus(true);
                 return true;
             } catch (error) {
-                console.error('Init error:', error);
+                console.error('❌ Init error:', error);
                 updateConnectionStatus(false, error.message);
                 return false;
             }
         }
 
-        // Show alert message
+        function updateConnectionStatus(connected, message = '') {
+            const statusDiv = document.getElementById('connectionStatus');
+            if (connected) {
+                statusDiv.className = 'connection-status status-connected';
+                statusDiv.textContent = '🟢 සම්බන්ධිතයි';
+            } else {
+                statusDiv.className = 'connection-status status-error';
+                statusDiv.textContent = '🔴 අසම්බන්ධිතයි';
+            }
+        }
+
         function showAlert(message, type = 'success') {
             const alertBox = document.getElementById('alertBox');
             alertBox.className = `alert alert-${type} show`;
             alertBox.textContent = message;
-            
-            setTimeout(() => {
-                alertBox.classList.remove('show');
-            }, 5000);
+            setTimeout(() => alertBox.classList.remove('show'), 5000);
         }
 
-        // Auto-generate student number
         async function generateStudentNumber() {
             try {
                 const { data: students, error } = await supabaseClient
@@ -789,10 +839,7 @@
                     .order('studentno', { ascending: false })
                     .limit(1);
 
-                if (error) {
-                    console.error('Error generating number:', error);
-                    throw error;
-                }
+                if (error) throw error;
 
                 let nextNumber = 1;
                 if (students && students.length > 0) {
@@ -803,23 +850,21 @@
 
                 const newStudentNo = 's' + String(nextNumber).padStart(4, '0');
                 document.getElementById('studentno').value = newStudentNo;
-                console.log('Generated student number:', newStudentNo);
+                console.log('📝 Generated:', newStudentNo);
             } catch (error) {
-                console.error('Error generating student number:', error);
+                console.error('❌ Error generating number:', error);
                 document.getElementById('studentno').value = 's0001';
             }
         }
 
-        // Update statistics
         function updateStats(totalStudents, totalClasses, freeClasses) {
             document.getElementById('totalStudents').textContent = totalStudents;
             document.getElementById('totalClasses').textContent = totalClasses;
             document.getElementById('freeClasses').textContent = freeClasses;
         }
 
-        // Load all students
         async function loadStudents() {
-            console.log('Loading students...');
+            console.log('📥 Loading students...');
             
             try {
                 const { data: classes, error } = await supabaseClient
@@ -827,22 +872,18 @@
                     .select('*')
                     .order('studentno', { ascending: true });
 
-                if (error) {
-                    console.error('Load error:', error);
-                    throw error;
-                }
+                if (error) throw error;
 
-                console.log('Loaded classes:', classes?.length || 0);
+                console.log('✅ Loaded:', classes?.length || 0, 'classes');
 
                 const studentsList = document.getElementById('studentsList');
                 
                 if (!classes || classes.length === 0) {
-                    studentsList.innerHTML = '<div class="no-data">📭 තවම ශිෂ්‍යයින් නොමැත<br>No students yet</div>';
+                    studentsList.innerHTML = '<div class="no-data">📭 තවම ශිෂ්‍යයින් නොමැත</div>';
                     updateStats(0, 0, 0);
                     return;
                 }
 
-                // Group classes by student number
                 const grouped = {};
                 classes.forEach(c => {
                     if (!grouped[c.studentno]) {
@@ -858,10 +899,10 @@
                 let totalClasses = classes.length;
                 let freeCount = 0;
 
-                // Generate HTML for student cards
                 studentsList.innerHTML = Object.entries(grouped).map(([studentno, data]) => {
                     const classesHTML = data.classes.map(c => {
                         const fee = parseFloat(c.monthly_fee) || 0;
+                        const outstanding = parseFloat(c.amount_payable) || 0;
                         if (fee === 0) freeCount++;
                         
                         return `
@@ -870,11 +911,15 @@
                                     <strong>${c.subject}</strong> - ${c.teachername}
                                     <br>
                                     <span style="color: #666; font-size: 14px;">
-                                        Rs. ${fee.toFixed(2)} ${fee === 0 ? '(නොමිලේ - FREE)' : ''}
+                                        මාසික: Rs. ${fee.toFixed(2)} ${fee === 0 ? '(නොමිලේ)' : ''}
+                                        ${outstanding > 0 ? `<br><span style="color: #dc3545; font-weight: bold;">හිඟ: Rs. ${outstanding.toFixed(2)}</span>` : ''}
                                     </span>
                                 </div>
                                 <div class="class-actions">
-                                    <button class="btn btn-danger" onclick="deleteClass(${c.id}, '${c.studentname}', '${c.subject}')">
+                                    <button class="btn btn-primary" onclick='openPaymentModal(${JSON.stringify(c)})'>
+                                        💰 ගෙවීම
+                                    </button>
+                                    <button class="btn btn-danger" onclick="deleteClass(${c.id}, '${c.studentname.replace(/'/g, "\\'")}', '${c.subject.replace(/'/g, "\\'")}')">
                                         🗑️ Delete
                                     </button>
                                 </div>
@@ -886,8 +931,8 @@
                         <div class="student-card">
                             <h4>${data.studentname} (${studentno})</h4>
                             <p>
-                                <strong>📞 දුරකථන - Phone:</strong> ${data.phoneno || 'N/A'} | 
-                                <strong>📚 පන්ති - Classes:</strong> ${data.classes.length}
+                                <strong>📞 දුරකථන:</strong> ${data.phoneno || 'N/A'} | 
+                                <strong>📚 පන්ති:</strong> ${data.classes.length}
                             </p>
                             ${classesHTML}
                         </div>
@@ -896,28 +941,26 @@
 
                 updateStats(Object.keys(grouped).length, totalClasses, freeCount);
             } catch (error) {
-                const studentsList = document.getElementById('studentsList');
-                studentsList.innerHTML = `
+                document.getElementById('studentsList').innerHTML = `
                     <div class="no-data">
-                        ❌ දත්ත පූරණය කිරීමේ දෝෂයක්<br>Error loading data
-                        <div class="error-details">
-                            <strong>Error:</strong> ${error.message}<br>
-                            <strong>Hint:</strong> Supabase RLS policies පරීක්ෂා කරන්න
-                        </div>
+                        ❌ දත්ත පූරණය කිරීමේ දෝෂයක්
+                        <div class="error-details">${error.message}</div>
                     </div>
                 `;
-                showAlert('දත්ත පූරණය කිරීමේ දෝෂයක් - Error loading data', 'error');
-                console.error('Error loading students:', error);
+                showAlert('Error loading data', 'error');
+                console.error('❌ Error:', error);
             }
         }
 
-        // Add student/class form submission
         document.getElementById('studentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
             submitBtn.textContent = '⏳ එකතු කරමින්...';
+            
+            const admissionFee = parseFloat(document.getElementById('admission_fee').value) || 0;
+            const outstandingBalance = parseFloat(document.getElementById('outstanding_balance').value) || 0;
             
             const studentData = {
                 studentno: document.getElementById('studentno').value.trim().toLowerCase(),
@@ -926,20 +969,20 @@
                 subject: document.getElementById('subject').value.trim(),
                 phoneno: document.getElementById('phoneno').value.trim(),
                 monthly_fee: parseFloat(document.getElementById('monthly_fee').value) || 0,
-                treport: 0,
-                ireport: 0
+                admission: admissionFee,
+                ireport: admissionFee, // Admission fee goes to institute
+                amount_payable: outstandingBalance,
+                treport: 0
             };
 
-            // Validate student number format
             if (!studentData.studentno.match(/^s\d{4}$/)) {
-                showAlert('ශිෂ්‍ය අංකය s0001 ආකෘතියෙන් විය යුතුයි - Student number must be in format s0001', 'error');
+                showAlert('ශිෂ්‍ය අංකය s0001 ආකෘතියෙන් විය යුතුයි', 'error');
                 submitBtn.disabled = false;
-                submitBtn.textContent = '➕ පන්තිය එකතු කරන්න - Add Class';
+                submitBtn.textContent = '➕ පන්තිය එකතු කරන්න';
                 return;
             }
 
             try {
-                // Check if student number already exists
                 const { data: existing, error: checkError } = await supabaseClient
                     .from('sipminireport')
                     .select('*')
@@ -948,39 +991,46 @@
                 if (checkError) throw checkError;
 
                 if (existing && existing.length > 0) {
-                    // Check for duplicate class
                     const duplicate = existing.find(s => 
                         s.subject.toLowerCase() === studentData.subject.toLowerCase() && 
                         s.teachername.toLowerCase() === studentData.teachername.toLowerCase()
                     );
 
                     if (duplicate) {
-                        showAlert('මෙම ශිෂ්‍යයා මෙම පන්තිය දැනටමත් follow කරයි! - This student already has this class!', 'error');
+                        showAlert('මෙම ශිෂ්‍යයා මෙම පන්තිය දැනටමත් follow කරයි!', 'error');
                         submitBtn.disabled = false;
-                        submitBtn.textContent = '➕ පන්තිය එකතු කරන්න - Add Class';
+                        submitBtn.textContent = '➕ පන්තිය එකතු කරන්න';
                         return;
                     }
 
-                    // Show existing student modal
+                    // Add outstanding balance to existing
+                    if (outstandingBalance > 0) {
+                        for (const existingClass of existing) {
+                            const currentOutstanding = parseFloat(existingClass.amount_payable) || 0;
+                            await supabaseClient
+                                .from('sipminireport')
+                                .update({ amount_payable: currentOutstanding + outstandingBalance })
+                                .eq('id', existingClass.id);
+                        }
+                    }
+
                     showExistingStudentModal(existing, studentData);
                     submitBtn.disabled = false;
-                    submitBtn.textContent = '➕ පන්තිය එකතු කරන්න - Add Class';
+                    submitBtn.textContent = '➕ පන්තිය එකතු කරන්න';
                     return;
                 }
 
-                // Insert new student
                 await insertStudent(studentData);
                 await generateStudentNumber();
             } catch (error) {
-                showAlert('දෝෂයක් - Error: ' + error.message, 'error');
-                console.error('Error adding student:', error);
+                showAlert('දෝෂයක්: ' + error.message, 'error');
+                console.error('❌ Error:', error);
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = '➕ පන්තිය එකතු කරන්න - Add Class';
+                submitBtn.textContent = '➕ පන්තිය එකතු කරන්න';
             }
         });
 
-        // Show existing student modal
         function showExistingStudentModal(existingClasses, newClassData) {
             existingStudentData = existingClasses[0];
             pendingClassData = newClassData;
@@ -992,7 +1042,7 @@
             const classList = existingClasses.map(c => 
                 `<div class="existing-class-item">
                     <strong>${c.subject}</strong> - ${c.teachername}
-                    <br><small style="color: #666;">Rs. ${parseFloat(c.monthly_fee) || 0}</small>
+                    <br><small>Rs. ${parseFloat(c.monthly_fee) || 0}</small>
                 </div>`
             ).join('');
             document.getElementById('existingClassesList').innerHTML = classList;
@@ -1000,18 +1050,15 @@
             document.getElementById('existingStudentModal').classList.add('show');
         }
 
-        // Close existing student modal
         function closeExistingStudentModal() {
             document.getElementById('existingStudentModal').classList.remove('show');
             pendingClassData = null;
             existingStudentData = null;
         }
 
-        // Add new class for existing student
         async function addNewClass() {
             if (!pendingClassData || !existingStudentData) return;
 
-            // Use existing student's name and phone
             pendingClassData.studentname = existingStudentData.studentname;
             pendingClassData.phoneno = existingStudentData.phoneno;
 
@@ -1019,7 +1066,6 @@
             closeExistingStudentModal();
         }
 
-        // Insert student into database
         async function insertStudent(studentData) {
             try {
                 const { error } = await supabaseClient
@@ -1028,22 +1074,85 @@
 
                 if (error) throw error;
 
-                showAlert(`✓ ${studentData.subject} පන්තිය ${studentData.studentname} සඳහා එකතු කරන ලදි! - ${studentData.subject} class added for ${studentData.studentname}!`, 'success');
+                showAlert(`✅ ${studentData.subject} පන්තිය ${studentData.studentname} සඳහා එකතු කරන ලදි!`, 'success');
                 
-                // Reset form
                 document.getElementById('studentForm').reset();
                 document.getElementById('teachername').value = '';
                 document.getElementById('subject').value = '';
+                document.getElementById('admission_fee').value = '0';
+                document.getElementById('outstanding_balance').value = '0';
                 
-                // Reload students list
                 loadStudents();
             } catch (error) {
-                showAlert('දෝෂයක් - Error: ' + error.message, 'error');
-                console.error('Error inserting student:', error);
+                showAlert('දෝෂයක්: ' + error.message, 'error');
+                console.error('❌ Insert error:', error);
             }
         }
 
-        // Delete class
+        function openPaymentModal(classData) {
+            currentPaymentClass = classData;
+            
+            document.getElementById('paymentStudentName').textContent = classData.studentname;
+            document.getElementById('paymentSubject').textContent = classData.subject;
+            document.getElementById('paymentMonthlyFee').textContent = 'Rs. ' + (parseFloat(classData.monthly_fee) || 0).toFixed(2);
+            
+            const outstanding = parseFloat(classData.amount_payable) || 0;
+            document.getElementById('paymentOutstanding').textContent = 'Rs. ' + outstanding.toFixed(2);
+            
+            document.getElementById('paymentAmount').value = '';
+            document.getElementById('absenceDeduction').value = '0';
+            
+            document.getElementById('paymentModal').classList.add('show');
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentModal').classList.remove('show');
+            currentPaymentClass = null;
+        }
+
+        async function recordPayment() {
+            if (!currentPaymentClass) return;
+
+            const paymentAmount = parseFloat(document.getElementById('paymentAmount').value) || 0;
+            const absenceDeduction = parseFloat(document.getElementById('absenceDeduction').value) || 0;
+
+            if (paymentAmount <= 0 && absenceDeduction <= 0) {
+                showAlert('කරුණාකර අගයක් ඇතුළත් කරන්න', 'error');
+                return;
+            }
+
+            try {
+                console.log('💰 Recording payment...');
+                
+                const currentOutstanding = parseFloat(currentPaymentClass.amount_payable) || 0;
+                
+                // Calculate new outstanding: subtract deduction and payment
+                let newOutstanding = currentOutstanding - absenceDeduction - paymentAmount;
+                
+                // If payment exceeds outstanding (after deduction), set to 0
+                if (newOutstanding < 0) {
+                    newOutstanding = 0;
+                }
+
+                console.log('📊 Outstanding:', currentOutstanding, '→', newOutstanding);
+                console.log('💵 Payment:', paymentAmount, '| Deduction:', absenceDeduction);
+
+                const { error } = await supabaseClient
+                    .from('sipminireport')
+                    .update({ amount_payable: newOutstanding })
+                    .eq('id', currentPaymentClass.id);
+
+                if (error) throw error;
+
+                showAlert('✅ ගෙවීම සාර්ථකව සටහන් කරන ලදි!', 'success');
+                closePaymentModal();
+                loadStudents();
+            } catch (error) {
+                showAlert('දෝෂයක්: ' + error.message, 'error');
+                console.error('❌ Payment error:', error);
+            }
+        }
+
         async function deleteClass(id, name, subject) {
             const confirmMessage = `ඔබට ${name} සඳහා ${subject} පන්තිය ඉවත් කිරීමට අවශ්‍යද?\n\nDelete ${subject} class for ${name}?`;
             
@@ -1057,30 +1166,33 @@
 
                 if (error) throw error;
 
-                showAlert(`✓ ${subject} පන්තිය ඉවත් කරන ලදි - ${subject} class deleted`, 'success');
+                showAlert(`✅ ${subject} පන්තිය ඉවත් කරන ලදි`, 'success');
                 loadStudents();
             } catch (error) {
-                showAlert('ඉවත් කිරීමේ දෝෂයක් - Delete error', 'error');
-                console.error('Error deleting class:', error);
+                showAlert('ඉවත් කිරීමේ දෝෂයක්', 'error');
+                console.error('❌ Delete error:', error);
             }
         }
 
-        // Refresh button
         document.getElementById('refreshBtn').addEventListener('click', () => {
             loadStudents();
-            showAlert('🔄 දත්ත නැවුම් කරන ලදි - Data refreshed', 'success');
+            showAlert('🔄 දත්ත නැවුම් කරන ලදි', 'success');
         });
 
-        // Close modal when clicking outside
         document.getElementById('existingStudentModal').addEventListener('click', (e) => {
             if (e.target.id === 'existingStudentModal') {
                 closeExistingStudentModal();
             }
         });
 
-        // Initial load
+        document.getElementById('paymentModal').addEventListener('click', (e) => {
+            if (e.target.id === 'paymentModal') {
+                closePaymentModal();
+            }
+        });
+
         window.addEventListener('DOMContentLoaded', async () => {
-            console.log('=== SIPMINI Student Management System ===');
+            console.log('🚀 SIPMINI Student Management System');
             
             const connected = await initSupabase();
             
@@ -1090,15 +1202,9 @@
             } else {
                 document.getElementById('studentsList').innerHTML = `
                     <div class="no-data">
-                        ❌ Database සම්බන්ධ කිරීමට නොහැකි විය<br>
-                        Cannot connect to database
+                        ❌ Database සම්බන්ධ කිරීමට නොහැකි විය
                         <div class="error-details">
-                            <strong>Possible causes:</strong><br>
-                            • RLS (Row Level Security) policies නිවැරදි නැත<br>
-                            • Network issue<br>
-                            • Invalid API key<br>
-                            <br>
-                            <strong>Fix:</strong> Run fix-rls-policies.sql in Supabase SQL Editor
+                            Check Supabase connection and RLS policies
                         </div>
                     </div>
                 `;
